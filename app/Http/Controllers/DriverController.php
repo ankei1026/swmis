@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Schedule;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Carbon\Carbon;
+
+class DriverController extends Controller
+{
+    public function index()
+    {
+        $totalCollections = Schedule::count();
+        $totalSuccess = Schedule::where('status', 'success')->count();
+        $totalFailed = Schedule::where('status', 'failed')->count();
+        $totalOngoing = Schedule::where('status', 'ongoing')->count();
+        $totalPending = Schedule::where('status', 'pending')->count();
+
+        // Get collections within the last 7 days
+        $startDate = Carbon::now()->subDays(6)->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+
+        $schedules = Schedule::whereBetween('date', [$startDate, $endDate])->get();
+
+
+        // Group by day and count success/failed
+        $weeklyData = collect();
+        foreach (range(0, 6) as $i) {
+            $day = $startDate->copy()->addDays($i);
+            $success = $schedules->where('date', $day->toDateString())->where('status', 'success')->count();
+            $failed = $schedules->where('date', $day->toDateString())->where('status', 'failed')->count();
+
+            $weeklyData->push([
+                'label' => $day->format('D'),
+                'success' => $success,
+                'failed' => $failed,
+            ]);
+        }
+
+        return Inertia::render('Driver/Dashboard', [
+            'totalCollections' => $totalCollections,
+            'totalSuccess' => $totalSuccess,
+            'totalFailed' => $totalFailed,
+            'totalOngoing' => $totalOngoing,
+            'totalPending' => $totalPending,
+            'weeklyPerformance' => $weeklyData,
+            // for mostSuccessfulCollection
+        ]);
+
+    }
+}

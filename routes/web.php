@@ -1,0 +1,129 @@
+<?php
+
+use App\Http\Controllers\{
+    AdminController,
+    BarangayController,
+    ComplaintsController,
+    DriverController,
+    MonitoringController,
+    RegisterController,
+    ResidentComplaintController,
+    ResidentController,
+    ResidentProfileController,
+    ResidentScheduleController,
+    ResidentWasteTrackerController,
+    ScheduleRouteController,
+    SchedulingController,
+    SessionController,
+    StationRouteController,
+    UserController,
+    WasteTrackerDriverController,
+    WelcomePageController
+};
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+
+// Route::get('/', function () {
+//     return Inertia::render('welcome');
+// })->name('home');
+
+Route::get('/', [WelcomePageController::class, 'index'])->name('welcome');
+
+// ======================
+// AUTHENTICATION ROUTES
+// ======================
+Route::prefix('auth')->group(function () {
+    Route::get('/login', [SessionController::class, 'index'])->name('login');
+    Route::post('/login', [SessionController::class, 'store']);
+    Route::post('/logout', [SessionController::class, 'destroy'])->name('logout');
+
+    Route::get('/register', [RegisterController::class, 'index']);
+    Route::post('/register', [RegisterController::class, 'store'])->name('register');
+});
+
+// ======================
+// ADMIN ROUTES
+// ======================
+Route::prefix('admin')
+    ->middleware(['auth', 'role:admin'])
+    ->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+
+        // User Management
+        Route::get('/users/create', [UserController::class, 'createUser'])->name('admin.users.create');
+        Route::get('/users/list', [UserController::class, 'listUser'])->name('admin.users.list');
+        Route::post('/users/store', [UserController::class, 'store'])->name('admin.users.store');
+        Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+        Route::put('/users/{id}/update', [UserController::class, 'update'])->name('admin.users.update');
+        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+
+        // Scheduling and Monitoring
+        Route::get('/scheduling/create', [SchedulingController::class, 'createScheduling'])->name('admin.scheduling.create');
+        Route::get('/scheduling/list', [SchedulingController::class, 'listScheduling'])->name('admin.scheduling.list');
+        Route::post('/scheduling/store', [SchedulingController::class, 'store'])->name('admin.scheduling.store');
+        Route::delete('/schedules/{schedule}', [SchedulingController::class, 'destroy'])->name('admin.schedules.destroy');
+        Route::get('/schedules/edit/{schedule}', [SchedulingController::class, 'edit'])->name('admin.schedules.edit'); // If you need edit functionality
+
+        // Route::get('/scheduling/create', [SchedulingController::class, 'createScheduling'])->name('admin.scheduling.create');
+        // Route::get('/scheduling/list', [SchedulingController::class, 'listScheduling'])->name('admin.scheduling.list');
+        // Route::post('/scheduling/store', [SchedulingController::class, 'store'])->name('admin.scheduling.store');
+        // Route::get('/schedules', [SchedulingController::class, 'getSchedules'])->name('admin.schedules.get');
+
+        Route::get('/monitoring', [MonitoringController::class, 'index'])->name('admin.monitoring');
+
+        Route::get('/complaints', [ComplaintsController::class, 'index'])->name('admin.complaints');
+        Route::get('/admin/complaints/{id}/edit', [ComplaintsController::class, 'edit'])->name('complaints.edit');
+        Route::put('/admin/complaints/{id}', [ComplaintsController::class, 'update'])->name('complaints.update');
+
+        Route::get('profile', [ResidentProfileController::class, 'adminProfile'])->name('admin.profile');
+    });
+
+// ======================
+// RESIDENT ROUTES
+// ======================
+Route::prefix('resident')
+    ->middleware(['auth', 'role:resident'])
+    ->group(function () {
+        Route::get('/dashboard', [ResidentController::class, 'index'])->name('resident.dashboard');
+
+        Route::get('/complaint', [ResidentComplaintController::class, 'index'])->name('resident.complaints.index');
+        Route::post('/complaint', [ResidentComplaintController::class, 'store'])->name('resident.complaints.store');
+
+        Route::get('/schedule', [ResidentScheduleController::class, 'index'])->name('resident.schedule');
+        Route::get('/collectiontracker', [ResidentWasteTrackerController::class, 'index'])->name('resident.collectiontracker');
+        Route::get('/profile', [ResidentProfileController::class, 'index'])->name('resident.profile');
+    });
+
+// ======================
+// DRIVER ROUTES
+// ======================
+Route::prefix('driver')
+    ->middleware(['auth', 'role:driver'])
+    ->group(function () {
+        Route::get('/dashboard', [DriverController::class, 'index'])->name('driver.dashboard');
+
+        Route::get('/barangays/create', [BarangayController::class, 'createBarangay'])->name('driver.barangay.create');
+        Route::get('/barangays/list', [BarangayController::class, 'listBarangay'])->name('driver.barangay.list');
+        Route::post('/barangays/store', [BarangayController::class, 'store'])->name('driver.barangay.store');
+        Route::get('/barangays/edit/{id}', [BarangayController::class, 'edit'])->name('driver.barangay.edit');
+        Route::put('/barangays/update/{id}', [BarangayController::class, 'update'])->name('driver.barangay.update');
+        Route::delete('/barangays/delete/{id}', [BarangayController::class, 'destroy'])->name('driver.barangay.delete');
+
+        Route::get('/stationroute/create', [StationRouteController::class, 'createStationRoute'])->name('driver.stationroute.create');
+        Route::get('/stationroute/list', [StationRouteController::class, 'listStationRoute'])->name('driver.stationroute.list');
+        Route::post('/stationroute/store', [StationRouteController::class, 'store'])->name('driver.stationroute.store');
+        Route::get('/stationroute/edit/{id}', [StationrouteController::class, 'edit'])->name('driver.stationroute.edit');
+        Route::put('/stationroute/update/{id}', [StationrouteController::class, 'update'])->name('driver.stationroute.update');
+        Route::delete('/stationroute/delete/{id}', [StationrouteController::class, 'destroy'])->name('driver.stationroute.delete');
+
+        Route::get('/scheduleroute/create', [ScheduleRouteController::class, 'createSchedulingRoute'])->name('driver.scheduleroute.create');
+        Route::get('/scheduleroute/list', [ScheduleRouteController::class, 'listSchedulingRoute'])->name('driver.scheduleroute.list');
+        Route::post('/scheduleroute/store', [ScheduleRouteController::class, 'store'])->name('driver.scheduleroute.store');
+        Route::get('/scheduleroute/edit/{id}', [ScheduleRouteController::class, 'editSchedulingRoute'])->name('driver.scheduleroute.edit');
+        Route::put('/scheduleroute/{id}', [ScheduleRouteController::class, 'update'])->name('driver.scheduleroute.update');
+        Route::delete('/scheduleroute/{id}', [ScheduleRouteController::class, 'destroy'])->name('driver.scheduleroute.destroy');
+
+        Route::get('/collectiontracker', [WasteTrackerDriverController::class, 'index'])->name('driver.collectiontracker');
+
+        Route::get('/profile', [ResidentProfileController::class, 'driverProfile'])->name('driver.profile');
+    });

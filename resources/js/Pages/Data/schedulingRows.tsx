@@ -1,0 +1,58 @@
+export const schedulingRows = [
+    {
+        id: 1,
+        date: '2025-10-11',
+        time: '08:30 AM',
+        route: 'Barangay Hall to Health Center',
+        driver: 'Juan Dela Cruz',
+        status: 'Ongoing',
+        type: 'Biodegradable (Malata)',
+    },
+    {
+        id: 2,
+        date: '2025-10-12',
+        time: '09:15 AM',
+        route: 'Health Center to Barangay Hall',
+        driver: 'Pedro Santos',
+        status: 'Success',
+        type: 'Non-Biodegradable (Di-Malata)',
+    },
+    {
+        id: 3,
+        date: '2025-10-13',
+        time: '10:00 AM',
+        route: 'Health Center to District Hospital',
+        driver: 'Maria Lopez',
+        status: 'Failed',
+        type: 'Biodegradable (Malata)',
+    },
+    {
+        id: 4,
+        date: '2025-10-14',
+        time: '07:45 AM',
+        route: 'Barangay Hall to Community Center',
+        driver: 'Carlos Mendoza',
+        status: 'Ongoing',
+        type: 'Non-Biodegradable (Di-Malata)',
+    },
+    {
+        id: 5,
+        date: '2025-10-15',
+        time: '11:30 AM',
+        route: 'Health Center to Barangay Hall',
+        driver: 'Ana Dela Cruz',
+        status: 'Success',
+        type: 'Biodegradable (Malata)',
+    },
+    {
+        id: 6,
+        date: '2025-10-16',
+        time: '02:00 PM',
+        route: 'Community Center to Health Center',
+        driver: 'Rico Santos',
+        status: 'Failed',
+        type: 'Non-Biodegradable (Di-Malata)',
+    },
+];
+
+export default schedulingRows;

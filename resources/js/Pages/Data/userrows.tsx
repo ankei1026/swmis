@@ -1,0 +1,68 @@
+// Sample rows
+const userRows = [
+    {
+        id: 1,
+        lastName: 'Snow',
+        firstName: 'Jon',
+        email: 'jon.snow@example.com',
+        phone: '+63 912 345 6789',
+        age: 35,
+        role: 'Admin',
+    },
+    {
+        id: 2,
+        lastName: 'Lannister',
+        firstName: 'Cersei',
+        email: 'cersei.lannister@example.com',
+        phone: '+63 923 456 7890',
+        age: 42,
+        role: 'Staff',
+    },
+    {
+        id: 3,
+        lastName: 'Lannister',
+        firstName: 'Jaime',
+        email: 'jaime.lannister@example.com',
+        phone: '+63 934 567 8901',
+        age: 45,
+        role: 'Resident',
+    },
+    {
+        id: 4,
+        lastName: 'Stark',
+        firstName: 'Arya',
+        email: 'arya.stark@example.com',
+        phone: '+63 945 678 9012',
+        age: 16,
+        role: 'Resident',
+    },
+    {
+        id: 5,
+        lastName: 'Targaryen',
+        firstName: 'Daenerys',
+        email: 'daenerys.targaryen@example.com',
+        phone: '+63 956 789 0123',
+        age: 30,
+        role: 'Admin',
+    },
+    {
+        id: 6,
+        lastName: 'Targaryen',
+        firstName: 'Daenerys',
+        email: 'daenerys.targaryen@example.com',
+        phone: '+63 956 789 0123',
+        age: 30,
+        role: 'Admin',
+    },
+    {
+        id: 7,
+        lastName: 'Targaryen',
+        firstName: 'Daenerys',
+        email: 'daenerys.targaryen@example.com',
+        phone: '+63 956 789 0123',
+        age: 30,
+        role: 'Admin',
+    },
+];
+
+export default userRows;
