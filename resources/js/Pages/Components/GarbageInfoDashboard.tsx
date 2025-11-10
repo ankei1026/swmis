@@ -20,7 +20,7 @@ const GarbageInfo: React.FC<GarbageInfoProps> = ({
     return (
         <div>
             <Title className="text-md font-semibold mb-2" title="Schedule Information"/>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Total Collections */}
                 <Card className="border border-gray-200 bg-white">
                     <CardContent className="flex items-center gap-3 p-3">
@@ -50,17 +50,6 @@ const GarbageInfo: React.FC<GarbageInfoProps> = ({
                         <div>
                             <h4 className="text-xs text-gray-500">Failed</h4>
                             <p className="text-lg font-semibold text-gray-900">{totalFailed}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Ongoing */}
-                <Card className="border border-gray-200 bg-white">
-                    <CardContent className="flex items-center gap-3 p-3">
-                        <Truck className="text-amber-500" size={20} />
-                        <div>
-                            <h4 className="text-xs text-gray-500">Ongoing</h4>
-                            <p className="text-lg font-semibold text-gray-900">{totalOngoing}</p>
                         </div>
                     </CardContent>
                 </Card>

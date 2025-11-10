@@ -10,7 +10,7 @@ import { route } from 'ziggy-js';
 
 // ✅ Edit schedule handler
 const handleEdit = (id: number) => {
-    router.visit(route('admin.schedules.edit', id));
+    router.visit(route('admin.scheduling.edit', id));
 };
 
 // ✅ Delete schedule handler
@@ -94,6 +94,7 @@ const scheduleColumns: GridColDef[] = [
         field: 'id',
         headerName: 'ID',
         width: 70,
+        flex: 1,
         align: 'center',
         headerAlign: 'center'
     },
@@ -101,6 +102,7 @@ const scheduleColumns: GridColDef[] = [
         field: 'date',
         headerName: 'Date',
         width: 120,
+        flex: 1,
         renderCell: (params) => (
             <div className="text-sm font-medium text-gray-700">
                 {formatDate(params.value)}
@@ -111,6 +113,7 @@ const scheduleColumns: GridColDef[] = [
         field: 'time',
         headerName: 'Time',
         width: 100,
+        flex: 1,
         renderCell: (params) => (
             <div className="text-sm text-gray-600">
                 {formatTime(params.value)}
@@ -121,6 +124,7 @@ const scheduleColumns: GridColDef[] = [
         field: 'route_name',
         headerName: 'Route',
         width: 180,
+        flex: 1,
         renderCell: (params) => (
             <div className="text-sm font-medium text-gray-700">
                 {params.value}
@@ -131,6 +135,7 @@ const scheduleColumns: GridColDef[] = [
         field: 'driver_name',
         headerName: 'Driver',
         width: 150,
+        flex: 1,
         renderCell: (params) => (
             <div className="text-sm font-medium text-gray-700">
                 {params.value}
@@ -141,6 +146,7 @@ const scheduleColumns: GridColDef[] = [
         field: 'type',
         headerName: 'Type',
         width: 180,
+        flex: 1,
         renderCell: (params) => (
             <Chip
                 label={params.value}
@@ -153,7 +159,10 @@ const scheduleColumns: GridColDef[] = [
     {
         field: 'status',
         headerName: 'Status',
+        headerAlign: 'center',
+        align: 'center',
         width: 120,
+        flex: 1,
         renderCell: (params) => (
             <Chip
                 label={params.value.charAt(0).toUpperCase() + params.value.slice(1)}
@@ -169,6 +178,7 @@ const scheduleColumns: GridColDef[] = [
         width: 120,
         align: 'center',
         headerAlign: 'center',
+        flex: 1,
         sortable: false,
         filterable: false,
         disableColumnMenu: true,

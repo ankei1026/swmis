@@ -3,11 +3,22 @@ import FormInputField from '@/Pages/Components/FormInputField';
 import FormLabel from '@/Pages/Components/FormLabel';
 import Title from '@/Pages/Components/Title';
 import Layout from '@/Pages/Layout/Layout';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Button, MenuItem, Select } from '@mui/material';
 import { toast } from "sonner"
 
+interface Barangay {
+    id: number;
+    name: string;
+}
+
+interface PageProps {
+    barangays: Barangay[];
+}
+
 const UserCreate = () => {
+    const { barangays } = usePage<PageProps>().props;
+
     const { data, setData, post, processing, errors, reset } = useForm({
         first_name: '',
         last_name: '',
@@ -35,7 +46,6 @@ const UserCreate = () => {
             },
             onError: () => {
                 toast.error('Failed to create user');
-                reset();
             }
         });
     };
@@ -107,19 +117,28 @@ const UserCreate = () => {
                             />
                         </FormInputField>
 
-                        {/* Barangay */}
+                        {/* Barangay - Updated to Dropdown */}
                         <FormInputField>
                             <FormLabel htmlFor="barangay" textLabel="Barangay" />
-                            <FormInput
+                            <Select
                                 id="barangay"
-                                type="text"
-                                placeholder="25"
                                 value={data.barangay}
                                 onChange={(e) => setData('barangay', e.target.value)}
-                                message={errors.barangay}
+                                displayEmpty
+                                fullWidth
+                                size="small"
                                 required
-                                className="w-full"
-                            />
+                            >
+                                <MenuItem value="">
+                                    <em>Select Barangay</em>
+                                </MenuItem>
+                                {barangays.map((barangay) => (
+                                    <MenuItem key={barangay.id} value={barangay.name}>
+                                        {barangay.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                            {errors.barangay && <p className="mt-1 text-sm text-red-500">{errors.barangay}</p>}
                         </FormInputField>
 
                         {/* Status */}

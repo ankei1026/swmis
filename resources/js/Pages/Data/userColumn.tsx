@@ -42,25 +42,26 @@ const handleDelete = (id: number) => {
 
 // ✅ Proper DataGrid column definitions
 const userColumns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'name', headerName: 'Name', width: 150 },
-    { field: 'email', headerName: 'Email', width: 200 },
-    { field: 'phone', headerName: 'Phone Number', width: 160 },
-    { field: 'barangay', headerName: 'Barangay', width: 150 },
+    { field: 'id', headerName: 'ID', width: 70, flex: 1, headerAlign: 'center', align: 'center' },
+    { field: 'name', headerName: 'Name', width: 150, flex: 1 },
+    { field: 'email', headerName: 'Email', width: 200, flex: 1 },
+    { field: 'phone', headerName: 'Phone Number', width: 160, flex: 1 },
+    { field: 'barangay', headerName: 'Barangay', width: 150, flex: 1 },
     {
         field: 'role',
         headerName: 'Role',
         width: 120,
         align: 'center',
         headerAlign: 'center',
+        flex: 1,
         renderCell: (params) => {
             const role = params.value as string;
             const color =
                 role === 'admin'
                     ? 'error'
-                    : role === 'staff'
-                    ? 'primary'
-                    : 'success';
+                    : role === 'resident'
+                        ? 'primary'
+                        : 'success';
             return <Chip label={role} color={color} size="small" />;
         },
     },
@@ -70,6 +71,7 @@ const userColumns: GridColDef[] = [
         width: 130,
         align: 'center',
         headerAlign: 'center',
+        flex: 1,
         renderCell: (params) => {
             const status = params.value as string;
             const color = status === 'verified' ? 'success' : 'error';
@@ -82,6 +84,7 @@ const userColumns: GridColDef[] = [
         width: 130,
         align: 'center',
         headerAlign: 'center',
+        flex: 1,
         sortable: false,
         renderCell: (params) => (
             <>

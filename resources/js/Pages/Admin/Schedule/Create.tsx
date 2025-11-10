@@ -251,7 +251,6 @@ const SchedulingCreate = () => {
                                     <MenuItem value="">
                                         <em>Select Status</em>
                                     </MenuItem>
-                                    <MenuItem value="Ongoing">Ongoing</MenuItem>
                                     <MenuItem value="Success">Success</MenuItem>
                                     <MenuItem value="Failed">Failed</MenuItem>
                                     <MenuItem value="Pending">Pending</MenuItem>

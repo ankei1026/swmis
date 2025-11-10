@@ -55,16 +55,17 @@ Route::prefix('admin')
         Route::get('/users/create', [UserController::class, 'createUser'])->name('admin.users.create');
         Route::get('/users/list', [UserController::class, 'listUser'])->name('admin.users.list');
         Route::post('/users/store', [UserController::class, 'store'])->name('admin.users.store');
-        Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
-        Route::put('/users/{id}/update', [UserController::class, 'update'])->name('admin.users.update');
+        Route::get('/users/edit/{id}', [UserController::class, 'edit'])->name('admin.users.edit');
+        Route::put('/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
         // Scheduling and Monitoring
         Route::get('/scheduling/create', [SchedulingController::class, 'createScheduling'])->name('admin.scheduling.create');
         Route::get('/scheduling/list', [SchedulingController::class, 'listScheduling'])->name('admin.scheduling.list');
         Route::post('/scheduling/store', [SchedulingController::class, 'store'])->name('admin.scheduling.store');
-        Route::delete('/schedules/{schedule}', [SchedulingController::class, 'destroy'])->name('admin.schedules.destroy');
-        Route::get('/schedules/edit/{schedule}', [SchedulingController::class, 'edit'])->name('admin.schedules.edit'); // If you need edit functionality
+        Route::get('/scheduling/{schedule}/edit', [SchedulingController::class, 'edit'])->name('admin.scheduling.edit');
+        Route::put('/scheduling/{schedule}', [SchedulingController::class, 'update'])->name('admin.scheduling.update');
+        Route::delete('/scheduling/{schedule}', [SchedulingController::class, 'destroy'])->name('admin.scheduling.destroy');
 
         Route::get('/monitoring', [MonitoringController::class, 'index'])->name('admin.monitoring');
 
