@@ -39,12 +39,14 @@ interface PageProps {
     };
 }
 
+
+
 const SchedulingCreate = () => {
     const { scheduleRoutes, flash } = usePage<PageProps>().props;
 
     const { data, setData, post, processing, errors, reset } = useForm({
         date: '',
-        time: '',
+        time: '08:00',
         schedule_route_id: '',
         status: '',
         type: '',
@@ -158,9 +160,10 @@ const SchedulingCreate = () => {
                                     <Input
                                         type="time"
                                         id="time-picker"
+                                        defaultValue={data.time}
                                         step="1"
-                                        value={data.time}
                                         onChange={handleTimeChange}
+                                        className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                                         required
                                     />
                                     {errors.time && (

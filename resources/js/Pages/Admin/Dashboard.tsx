@@ -8,6 +8,7 @@ import recentActivity from '../Data/recentActivity';
 import Layout from '../Layout/Layout';
 import Title from '../Components/Title';
 import GarbageInfo from '../Components/GarbageInfoDashboard';
+import UsersInfo from '../Components/UsersInfoDashboard';
 
 interface DashboardProps {
     totalCollections: number;
@@ -15,6 +16,10 @@ interface DashboardProps {
     totalFailed: number;
     totalOngoing: number;
     totalPending: number;
+    totalUsers: number;
+    adminCount: number;
+    driverCount: number;
+    residentCount: number;
 }
 
 const Dashboard = () => {
@@ -24,8 +29,14 @@ const Dashboard = () => {
         totalFailed,
         totalOngoing,
         totalPending,
+        totalUsers,
+        adminCount,
+        driverCount,
+        residentCount,
         weeklyPerformance,
     } = usePage<DashboardProps>().props;
+
+    console.log("total Uers: ", totalUsers)
 
     // compute success counts per route from recentActivity
     const successCountsByRoute = recentActivity.reduce<Record<string, number>>((acc, cur) => {
@@ -137,6 +148,12 @@ const Dashboard = () => {
         <Layout>
             <Head title="Admin Dashboard" />
             <Title title="Dashboard" />
+            <UsersInfo
+                totalUsers={totalUsers}
+                adminCount={adminCount}
+                driverCount={driverCount}
+                residentCount={residentCount}
+            />
             <GarbageInfo
                 totalCollections={totalCollections}
                 totalOngoing={totalOngoing}

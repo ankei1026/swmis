@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Schedule;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,6 +12,11 @@ class AdminController extends Controller
 {
     public function index()
     {
+        $totalUsers = User::count();
+        $adminCount = User::where('role', 'admin')->count();
+        $driverCount = User::where('role', 'driver')->count();
+        $residentCount = User::where('role', 'resident')->count();
+
         $totalCollections = Schedule::count();
         $totalSuccess = Schedule::where('status', 'success')->count();
         $totalFailed = Schedule::where('status', 'failed')->count();
@@ -46,6 +52,11 @@ class AdminController extends Controller
                 'totalOngoing' => $totalOngoing,
                 'totalPending' => $totalPending,
                 'weeklyPerformance' => $weeklyData,
+
+                'totalUsers' => $totalUsers,
+                'adminCount' => $adminCount,
+                'driverCount' => $driverCount,
+                'residentCount' => $residentCount,
             ]
         );
     }

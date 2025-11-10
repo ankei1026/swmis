@@ -42,7 +42,7 @@ class SchedulingController extends Controller
 
     public function listScheduling()
     {
-        $schedules = Schedule::with(['scheduleRoute', 'driver']) // Remove scheduleRoute.stationRoutes
+        $schedules = Schedule::with(['scheduleRoute', 'driver'])
             ->latest()
             ->get()
             ->map(function ($schedule) {

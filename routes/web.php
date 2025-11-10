@@ -5,6 +5,7 @@ use App\Http\Controllers\{
     BarangayController,
     ComplaintsController,
     DriverController,
+    DriverScheduleController,
     MonitoringController,
     RegisterController,
     ResidentComplaintController,
@@ -17,6 +18,7 @@ use App\Http\Controllers\{
     SessionController,
     StationRouteController,
     UserController,
+    UserVerificationController,
     WasteTrackerDriverController,
     WelcomePageController
 };
@@ -64,12 +66,12 @@ Route::prefix('admin')
         Route::delete('/schedules/{schedule}', [SchedulingController::class, 'destroy'])->name('admin.schedules.destroy');
         Route::get('/schedules/edit/{schedule}', [SchedulingController::class, 'edit'])->name('admin.schedules.edit'); // If you need edit functionality
 
-        // Route::get('/scheduling/create', [SchedulingController::class, 'createScheduling'])->name('admin.scheduling.create');
-        // Route::get('/scheduling/list', [SchedulingController::class, 'listScheduling'])->name('admin.scheduling.list');
-        // Route::post('/scheduling/store', [SchedulingController::class, 'store'])->name('admin.scheduling.store');
-        // Route::get('/schedules', [SchedulingController::class, 'getSchedules'])->name('admin.schedules.get');
-
         Route::get('/monitoring', [MonitoringController::class, 'index'])->name('admin.monitoring');
+
+        Route::get('/user-verification', [UserVerificationController::class, 'adminIndex'])->name('admin.user-verification');
+        Route::get('/user-verification/{id}', [UserVerificationController::class, 'adminShow'])->name('admin.user-verification.show');
+        Route::put('/user-verification/{id}', [UserVerificationController::class, 'update'])->name('admin.user-verification.update');
+        Route::delete('/user-verification/{id}', [UserVerificationController::class, 'destroy'])->name('admin.user-verification.destroy');
 
         Route::get('/complaints', [ComplaintsController::class, 'index'])->name('admin.complaints');
         Route::get('/admin/complaints/{id}/edit', [ComplaintsController::class, 'edit'])->name('complaints.edit');
@@ -88,6 +90,10 @@ Route::prefix('resident')
 
         Route::get('/complaint', [ResidentComplaintController::class, 'index'])->name('resident.complaints.index');
         Route::post('/complaint', [ResidentComplaintController::class, 'store'])->name('resident.complaints.store');
+
+        Route::get('/user-verification', [UserVerificationController::class, 'index'])->name('user.user-verification.index');
+        Route::post('/user-verification/create', [UserVerificationController::class, 'store'])->name('user.user-verification.store');
+        Route::get('/user-verification/{id}', [UserVerificationController::class, 'show'])->name('user.user-verification.show');
 
         Route::get('/schedule', [ResidentScheduleController::class, 'index'])->name('resident.schedule');
         Route::get('/collectiontracker', [ResidentWasteTrackerController::class, 'index'])->name('resident.collectiontracker');
@@ -124,6 +130,8 @@ Route::prefix('driver')
         Route::delete('/scheduleroute/{id}', [ScheduleRouteController::class, 'destroy'])->name('driver.scheduleroute.destroy');
 
         Route::get('/collectiontracker', [WasteTrackerDriverController::class, 'index'])->name('driver.collectiontracker');
+
+        Route::get('/schedule', [DriverScheduleController::class, 'index'])->name('driver.schedule');
 
         Route::get('/profile', [ResidentProfileController::class, 'driverProfile'])->name('driver.profile');
     });

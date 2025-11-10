@@ -40,22 +40,22 @@ const Profile = () => {
                         <CardContent className="px-8 pb-8">
                             <div className="space-y-4">
                                 <div className="flex justify-between border-b border-gray-100 py-3">
-                                    <span className="text-sm font-medium text-gray-600">Email</span>
+                                    <span className="text-sm font-bold text-gray-600">Email</span>
                                     <span className="text-sm text-gray-900">{user.email}</span>
                                 </div>
 
                                 <div className="flex justify-between border-b border-gray-100 py-3">
-                                    <span className="text-sm font-medium text-gray-600">Phone Number</span>
+                                    <span className="text-sm font-bold text-gray-600">Phone Number</span>
                                     <span className="text-sm text-gray-900">{user.phone_number}</span>
                                 </div>
 
                                 <div className="flex justify-between py-3">
-                                    <span className="text-sm font-medium text-gray-600">Barangay</span>
+                                    <span className="text-sm font-bold text-gray-600">Barangay</span>
                                     <span className="max-w-xs text-right text-sm text-gray-900">{user.barangay}</span>
                                 </div>
 
                                 <div className="flex justify-between py-3">
-                                    <span className="text-sm font-medium text-gray-600">Status</span>
+                                    <span className="text-sm font-bold text-gray-600">Status</span>
                                     <span className="max-w-xs text-right text-sm text-gray-900">{user.status}</span>
                                 </div>
                             </div>

@@ -39,35 +39,35 @@ const handleDelete = (id: number) => {
 
 // ✅ Schedule Route DataGrid column definitions
 const scheduleRouteColumns: GridColDef[] = [
-    { 
-        field: 'id', 
-        headerName: 'ID', 
+    {
+        field: 'id',
+        headerName: 'ID',
         width: 80,
         align: 'center',
         headerAlign: 'center'
     },
-    { 
-        field: 'route_name', 
-        headerName: 'Route Name', 
+    {
+        field: 'route_name',
+        headerName: 'Route Name',
         width: 150,
     },
-    { 
-        field: 'driver_name', 
-        headerName: 'Assigned Driver', 
+    {
+        field: 'driver_name',
+        headerName: 'Assigned Driver',
         width: 180,
         renderCell: (params) => (
-            <div className="text-sm font-medium text-gray-700 mt-4">
+            <div className="text-sm font-medium text-gray-700">
                 {params.value}
             </div>
         ),
     },
-    { 
-        field: 'station_names', 
-        headerName: 'Route Stations', 
+    {
+        field: 'station_names',
+        headerName: 'Route Stations',
         width: 200,
         flex: 1,
         renderCell: (params) => (
-            <div className="text-sm text-gray-600 mt-4 hidden sm:block">
+            <div className="text-sm text-gray-600 hidden sm:block">
                 {params.value || 'No stations assigned'}
             </div>
         ),
@@ -91,8 +91,8 @@ const scheduleRouteColumns: GridColDef[] = [
                             e.stopPropagation();
                             handleEdit(params.row.id);
                         }}
-                        sx={{ 
-                            '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' } 
+                        sx={{
+                            '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
                         }}
                     >
                         <EditIcon fontSize="small" />
@@ -106,8 +106,8 @@ const scheduleRouteColumns: GridColDef[] = [
                             e.stopPropagation();
                             handleDelete(params.row.id);
                         }}
-                        sx={{ 
-                            '&:hover': { backgroundColor: 'rgba(211, 47, 47, 0.04)' } 
+                        sx={{
+                            '&:hover': { backgroundColor: 'rgba(211, 47, 47, 0.04)' }
                         }}
                     >
                         <DeleteIcon fontSize="small" />

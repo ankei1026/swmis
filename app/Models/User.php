@@ -55,4 +55,23 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(ScheduleRoute::class, 'driver_scheduling_route', 'driver_id', 'scheduling_route_id');
     }
+
+    // In User model
+    public function verifications()
+    {
+        return $this->hasMany(UserVerification::class, 'resident_id');
+    }
+
+    public function pendingVerifications()
+    {
+        return $this->verifications()->where('status', 'pending');
+    }
+
+    public function isFullyVerified()
+    {
+        $requiredTypes = ['valid_id', 'birth_certificate', 'barangay_certificate'];
+        $approvedTypes = $this->verifications()->where('status', 'approved')->pluck('type');
+
+        return $approvedTypes->intersect($requiredTypes)->count() === count($requiredTypes);
+    }
 }

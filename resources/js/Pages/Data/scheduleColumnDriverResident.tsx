@@ -4,38 +4,6 @@ import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { GridColDef } from '@mui/x-data-grid';
-import { router } from '@inertiajs/react';
-import { toast } from 'sonner';
-import { route } from 'ziggy-js';
-
-// ✅ Edit schedule handler
-const handleEdit = (id: number) => {
-    router.visit(route('admin.schedules.edit', id));
-};
-
-// ✅ Delete schedule handler
-const handleDelete = (id: number) => {
-    toast.warning('Are you sure you want to delete this schedule?', {
-        action: {
-            label: 'Confirm',
-            onClick: () => {
-                router.delete(route('admin.schedules.destroy', id), {
-                    preserveScroll: true,
-                    onStart: () => toast.loading('Deleting schedule...'),
-                    onSuccess: () => {
-                        toast.dismiss();
-                        toast.success('Schedule deleted successfully!');
-                    },
-                    onError: () => {
-                        toast.dismiss();
-                        toast.error('Failed to delete schedule.');
-                    },
-                });
-            },
-        },
-        duration: 5000,
-    });
-};
 
 // ✅ Get status color
 const getStatusColor = (status: string) => {
@@ -65,7 +33,7 @@ const getTypeColor = (type: string) => {
 
 // ✅ Format time for display
 const formatTime = (time: string) => {
-    if (!time) return '';
+    if (!time) return 'No Time';
 
     // If time is in 24-hour format, convert to 12-hour format
     const [hours, minutes] = time.split(':');
@@ -78,7 +46,7 @@ const formatTime = (time: string) => {
 
 // ✅ Format date for display
 const formatDate = (dateString: string) => {
-    if (!dateString) return '';
+    if (!dateString) return 'No Date';
 
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -89,18 +57,20 @@ const formatDate = (dateString: string) => {
 };
 
 // ✅ Schedule DataGrid column definitions
-const scheduleColumns: GridColDef[] = [
+const scheduleColumnsDriverResident: GridColDef[] = [
     {
         field: 'id',
         headerName: 'ID',
         width: 70,
         align: 'center',
+        flex: 1,
         headerAlign: 'center'
     },
     {
         field: 'date',
         headerName: 'Date',
         width: 120,
+        flex: 1,
         renderCell: (params) => (
             <div className="text-sm font-medium text-gray-700">
                 {formatDate(params.value)}
@@ -111,6 +81,7 @@ const scheduleColumns: GridColDef[] = [
         field: 'time',
         headerName: 'Time',
         width: 100,
+        flex: 1,
         renderCell: (params) => (
             <div className="text-sm text-gray-600">
                 {formatTime(params.value)}
@@ -121,9 +92,10 @@ const scheduleColumns: GridColDef[] = [
         field: 'route_name',
         headerName: 'Route',
         width: 180,
+        flex: 1,
         renderCell: (params) => (
             <div className="text-sm font-medium text-gray-700">
-                {params.value}
+                {params.value || 'No Route'}
             </div>
         ),
     },
@@ -131,9 +103,10 @@ const scheduleColumns: GridColDef[] = [
         field: 'driver_name',
         headerName: 'Driver',
         width: 150,
+        flex: 1,
         renderCell: (params) => (
             <div className="text-sm font-medium text-gray-700">
-                {params.value}
+                {params.value || 'No Driver'}
             </div>
         ),
     },
@@ -141,9 +114,10 @@ const scheduleColumns: GridColDef[] = [
         field: 'type',
         headerName: 'Type',
         width: 180,
+        flex: 1,
         renderCell: (params) => (
             <Chip
-                label={params.value}
+                label={params.value || 'Unknown'}
                 size="small"
                 color={getTypeColor(params.value) as any}
                 variant="outlined"
@@ -154,59 +128,16 @@ const scheduleColumns: GridColDef[] = [
         field: 'status',
         headerName: 'Status',
         width: 120,
+        flex: 1,
         renderCell: (params) => (
             <Chip
-                label={params.value.charAt(0).toUpperCase() + params.value.slice(1)}
+                label={params.value ? params.value.charAt(0).toUpperCase() + params.value.slice(1) : 'Unknown'}
                 size="small"
                 color={getStatusColor(params.value) as any}
                 variant="filled"
             />
         ),
     },
-    {
-        field: 'actions',
-        headerName: 'Actions',
-        width: 120,
-        align: 'center',
-        headerAlign: 'center',
-        sortable: false,
-        filterable: false,
-        disableColumnMenu: true,
-        renderCell: (params) => (
-            <div className="flex justify-center items-center gap-1 h-full">
-                <Tooltip title="Edit Schedule">
-                    <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(params.row.id);
-                        }}
-                        sx={{
-                            '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
-                        }}
-                    >
-                        <EditIcon fontSize="small" />
-                    </IconButton>
-                </Tooltip>
-                <Tooltip title="Delete Schedule">
-                    <IconButton
-                        size="small"
-                        color="error"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(params.row.id);
-                        }}
-                        sx={{
-                            '&:hover': { backgroundColor: 'rgba(211, 47, 47, 0.04)' }
-                        }}
-                    >
-                        <DeleteIcon fontSize="small" />
-                    </IconButton>
-                </Tooltip>
-            </div>
-        ),
-    },
 ];
 
-export default scheduleColumns;
+export default scheduleColumnsDriverResident;

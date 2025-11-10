@@ -1,6 +1,6 @@
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import { hr } from 'date-fns/locale';
-import { BellIcon, Calendar1Icon, EyeIcon, GitPullRequestCreateIcon, HomeIcon, LandmarkIcon, ListIcon, LocationEditIcon, RouteIcon, User2Icon, UserIcon } from 'lucide-react';
+import { BellIcon, Calendar1Icon, CheckIcon, EyeIcon, GitPullRequestCreateIcon, HomeIcon, LandmarkIcon, ListIcon, LocationEditIcon, RouteIcon, User2Icon, UserIcon } from 'lucide-react';
 
 export const mainMenu = [
     {
@@ -18,7 +18,7 @@ export const mainMenu = [
     },
     {
         text: 'Schedule',
-        icon: <Calendar1Icon />,        
+        icon: <Calendar1Icon />,
         children: [
             { text: 'List', href: '/admin/scheduling/list', icon: <ListIcon /> },
             { text: 'Create', href: '/admin/scheduling/create', icon: <GitPullRequestCreateIcon /> },
@@ -33,6 +33,7 @@ export const secondaryMenu = [
         href: '/admin/monitoring',
     },
     { text: 'Complaints', icon: <InboxIcon />, href: '/admin/complaints' },
+    { text: 'Verify', icon: <CheckIcon />, href: '/admin/user-verification' },
     { text: 'Profile', icon: <UserIcon />, href: '/admin/profile' },
 ];
 
@@ -57,11 +58,15 @@ export const secondaryMenuResident = [
         href: '/resident/collectiontracker',
     },
     {
-        text: 'Collection Schedule',
+        text: 'Schedule',
         icon: <Calendar1Icon />,
         href: '/resident/schedule',
     },
-
+    {
+        text: 'Verify',
+        icon: <CheckIcon />,
+        href: '/resident/user-verification',
+    },
     {
         text: 'Profile',
         icon: <User2Icon />,
@@ -106,9 +111,9 @@ export const mainMenuDriver = [
 
 export const secondaryMenuDriver = [
     {
-        text: 'Collection Schedule',
+        text: 'Schedule',
         icon: <Calendar1Icon />,
-        href: '/driver/scheduling/list',
+        href: '/driver/schedule',
     },
     {
         text: 'Collection Tracker',
