@@ -7,8 +7,12 @@ import AuthModal from './Auth/AuthModal';
 export default function LandingPage() {
     const [showAuth, setShowAuth] = useState(false);
 
-    const { props } = usePage<{ barangays?: { id: number; name: string }[] }>();
+    const { props } = usePage<{ 
+        barangays?: { id: number; name: string }[]; 
+        successCount?: number
+    }>();
     const barangays = props.barangays ?? [];
+    const successCount = props.successCount ?? []; // Fixed: Added schedules definition
 
     return (
         <div>
@@ -112,8 +116,8 @@ export default function LandingPage() {
                             {[
                                 {
                                     icon: <Leaf className="text-green-600" />,
-                                    value: '25K+',
-                                    label: 'Tons Collected',
+                                    value: successCount,
+                                    label: 'Waste Collection Success',
                                 },
                                 {
                                     icon: <ShieldCheck className="text-green-600" />,

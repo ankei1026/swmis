@@ -17,7 +17,7 @@ class WasteTrackerDriverController extends Controller
 
         $schedules = Schedule::with(['scheduleRoute', 'stationLogs.station'])
             ->where('driver_id', $driverId)
-            ->whereIn('status', ['pending', 'in_progress', 'completed', 'failed'])
+            ->whereIn('status', ['pending', 'in_progress', 'completed'])
             ->orderBy('date')
             ->orderBy('time')
             ->get()

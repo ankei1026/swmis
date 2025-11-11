@@ -148,25 +148,6 @@ const MostSuccessfulCollection: React.FC<MostSuccessfulLocationProps> = ({
                         </div>
                     )}
                 </div>
-
-                {/* Show other successful routes */}
-                {Object.keys(successCountsByRoute).length > 1 && (
-                    <div className="mt-4">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">
-                            Other Successful Routes:
-                        </h4>
-                        <div className="space-y-1 max-h-20 overflow-y-auto">
-                            {Object.entries(successCountsByRoute)
-                                .filter(([route]) => route !== mostSuccessfulRoute)
-                                .map(([route, count]) => (
-                                    <div key={route} className="flex justify-between text-xs text-gray-600">
-                                        <span>{route}</span>
-                                        <span>{count} {count === 1 ? 'success' : 'successes'}</span>
-                                    </div>
-                                ))}
-                        </div>
-                    </div>
-                )}
             </CardContent>
         </Card>
     );

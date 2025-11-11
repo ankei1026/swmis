@@ -78,202 +78,222 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 >
                     <motion.div
                         key={isLogin ? 'login' : 'register'}
-                        className="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl"
+                        className="relative mx-4 w-full max-w-6xl flex rounded-2xl bg-white shadow-2xl overflow-hidden"
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
                         transition={{ duration: 0.25 }}
                     >
-                        {/* Close Button */}
-                        <button
-                            onClick={onClose}
-                            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-                        >
-                            ✕
-                        </button>
-
-                        <Head title={isLogin ? 'Login' : 'Register'} />
-
-                        {/* Header */}
-                        <div className="text-center">
-                            <Logo width={90} height={90} className="mx-auto mb-4" altText="App Logo" />
-                            <h1 className="mb-2 text-3xl font-bold">SWMIS</h1>
-                            <h2 className="mb-2 text-xl font-semibold">
-                                {isLogin ? 'Welcome back!' : 'Hey there!'}
-                            </h2>
-                            <p className="mb-6 text-sm text-gray-600">
-                                {isLogin
-                                    ? 'Login to access the dashboard and help the community better one step at a time.'
-                                    : 'Sign up to access the dashboard and help the community better — one step at a time.'}
-                            </p>
+                        {/* Image Section - Left Side */}
+                        <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-green-50 to-blue-50 items-center justify-center p-8">
+                            <div className="text-center">
+                                <img 
+                                    src="/assets/Solid Waste.png" 
+                                    alt="Solid Waste Management" 
+                                    className="w-full max-w-xs h-auto mx-auto mb-6 rounded-lg"
+                                />
+                                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                                    Solid Waste Management
+                                </h2>
+                                <p className="text-gray-600 text-sm">
+                                    Join us in creating a cleaner and greener environment for our community
+                                </p>
+                            </div>
                         </div>
 
-                        {/* --- LOGIN FORM --- */}
-                        {isLogin ? (
-                            <form onSubmit={handleLogin}>
-                                <FormInputField>
-                                    <FormLabel htmlFor="email" textLabel="Email" />
-                                    <FormInput
-                                        id="email"
-                                        type="email"
-                                        placeholder="example@email.com"
-                                        value={loginForm.data.email}
-                                        onChange={(e) => loginForm.setData('email', e.target.value)}
-                                        message={loginForm.errors.email}
-                                        required
-                                        className='w-full'
-                                    />
-                                </FormInputField>
+                        {/* Form Section - Right Side */}
+                        <div className="w-full md:w-1/2 p-8 relative">
+                            {/* Close Button */}
+                            <button
+                                onClick={onClose}
+                                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 z-10"
+                            >
+                                ✕
+                            </button>
 
-                                <FormInputField>
-                                    <FormLabel htmlFor="password" textLabel="Password" />
-                                    <FormInput
-                                        id="password"
-                                        type="password"
-                                        placeholder="********"
-                                        value={loginForm.data.password}
-                                        onChange={(e) => loginForm.setData('password', e.target.value)}
-                                        message={loginForm.errors.password}
-                                        required
-                                        className='w-full'
-                                    />
-                                </FormInputField>
+                            <Head title={isLogin ? 'Login' : 'Register'} />
 
-                                <FormInputField>
-                                    <FormButton className="mt-3 w-full" submit="Login" />
-                                    <p className="mt-4 text-center text-sm">
-                                        Don’t have an account?{' '}
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsLogin(false)}
-                                            className="text-blue-600 underline"
-                                        >
-                                            Sign Up
-                                        </button>
-                                    </p>
-                                </FormInputField>
-                            </form>
-                        ) : (
-                            /* --- REGISTER FORM --- */
-                            <form onSubmit={handleSignup}>
-                                {/* Scrollable container: show ~2 fields and allow scrolling */}
-                                <div className="max-h-48 overflow-y-auto pr-2 space-y-4">
-                                    {/* Name */}
-                                    <FormInputField>
-                                        <FormLabel htmlFor="name" textLabel="Name" />
-                                        <FormInput
-                                            id="name"
-                                            type="text"
-                                            placeholder="Juan Dela Cruz"
-                                            value={registerForm.data.name}
-                                            onChange={(e) => registerForm.setData('name', e.target.value)}
-                                            onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
-                                            message={registerForm.errors.name}
-                                            required
-                                            className="w-full"
-                                        />
-                                    </FormInputField>
+                            {/* Header */}
+                            <div className="text-center">
+                                <Logo width={90} height={90} className="mx-auto mb-4" altText="App Logo" />
+                                <h1 className="mb-2 text-3xl font-bold">SWMIS</h1>
+                                <h2 className="mb-2 text-xl font-semibold">
+                                    {isLogin ? 'Welcome back!' : 'Hey there!'}
+                                </h2>
+                                <p className="mb-6 text-sm text-gray-600">
+                                    {isLogin
+                                        ? 'Login to access the dashboard and help the community better one step at a time.'
+                                        : 'Sign up to access the dashboard and help the community better — one step at a time.'}
+                                </p>
+                            </div>
 
-                                    {/* Email */}
+                            {/* --- LOGIN FORM --- */}
+                            {isLogin ? (
+                                <form onSubmit={handleLogin}>
                                     <FormInputField>
                                         <FormLabel htmlFor="email" textLabel="Email" />
                                         <FormInput
                                             id="email"
                                             type="email"
                                             placeholder="example@email.com"
-                                            value={registerForm.data.email}
-                                            onChange={(e) => registerForm.setData('email', e.target.value)}
-                                            onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
-                                            message={registerForm.errors.email}
+                                            value={loginForm.data.email}
+                                            onChange={(e) => loginForm.setData('email', e.target.value)}
+                                            message={loginForm.errors.email}
                                             required
-                                            className="w-full"
+                                            className='w-full'
                                         />
                                     </FormInputField>
 
-                                    {/* Phone Number */}
-                                    <FormInputField>
-                                        <FormLabel htmlFor="phone_number" textLabel="Phone Number" />
-                                        <FormInput
-                                            id="phone_number"
-                                            type="tel"
-                                            placeholder="09xxxxxxxxx"
-                                            value={registerForm.data.phone_number}
-                                            onChange={(e) => registerForm.setData('phone_number', e.target.value)}
-                                            onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
-                                            message={registerForm.errors.phone_number}
-                                            required
-                                            className="w-full"
-                                        />
-                                    </FormInputField>
-
-                                    {/* Barangay Dropdown */}
-                                    <FormInputField>
-                                        <FormLabel htmlFor="barangay" textLabel="Barangay" />
-                                        <select
-                                            id="barangay"
-                                            value={registerForm.data.barangay}
-                                            onChange={(e) => registerForm.setData('barangay', e.target.value)}
-                                            onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
-                                            className="w-full rounded-lg border border-gray-300 p-2 focus:border-green-600 focus:outline-none"
-                                            required
-                                        >
-                                            <option value="">Select Barangay</option>
-                                            {barangays.map((barangay: any) => (
-                                                <option key={barangay.id} value={barangay.name}>
-                                                    {barangay.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </FormInputField>
-
-                                    {/* Password */}
                                     <FormInputField>
                                         <FormLabel htmlFor="password" textLabel="Password" />
                                         <FormInput
                                             id="password"
                                             type="password"
                                             placeholder="********"
-                                            value={registerForm.data.password}
-                                            onChange={(e) => registerForm.setData('password', e.target.value)}
-                                            onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
-                                            message={registerForm.errors.password}
+                                            value={loginForm.data.password}
+                                            onChange={(e) => loginForm.setData('password', e.target.value)}
+                                            message={loginForm.errors.password}
                                             required
-                                            className="w-full"
+                                            className='w-full'
                                         />
                                     </FormInputField>
 
                                     <FormInputField>
-                                        <FormLabel htmlFor="password_confirmation" textLabel="Confirm Password" />
-                                        <FormInput
-                                            id="password_confirmation"
-                                            type="password"
-                                            placeholder="********"
-                                            value={registerForm.data.password_confirmation}
-                                            onChange={(e) => registerForm.setData('password_confirmation', e.target.value)}
-                                            onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
-                                            message={registerForm.errors.password_confirmation}
-                                            required
-                                            className="w-full"
-                                        />
+                                        <FormButton className="mt-3 w-full" submit="Login" />
+                                        <p className="mt-4 text-center text-sm">
+                                            Don't have an account?{' '}
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsLogin(false)}
+                                                className="text-blue-600 underline"
+                                            >
+                                                Sign Up
+                                            </button>
+                                        </p>
                                     </FormInputField>
-                                </div>
+                                </form>
+                            ) : (
+                                /* --- REGISTER FORM --- */
+                                <form onSubmit={handleSignup}>
+                                    {/* Scrollable container: show ~2 fields and allow scrolling */}
+                                    <div className="max-h-48 overflow-y-auto pr-2 space-y-4">
+                                        {/* Name */}
+                                        <FormInputField>
+                                            <FormLabel htmlFor="name" textLabel="Name" />
+                                            <FormInput
+                                                id="name"
+                                                type="text"
+                                                placeholder="Juan Dela Cruz"
+                                                value={registerForm.data.name}
+                                                onChange={(e) => registerForm.setData('name', e.target.value)}
+                                                onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                                                message={registerForm.errors.name}
+                                                required
+                                                className="w-full"
+                                            />
+                                        </FormInputField>
 
-                                {/* Submit & switch - kept outside scroll area so it's always visible */}
-                                <FormInputField>
-                                    <FormButton className="mt-3 w-full" submit="Sign Up" />
-                                    <p className="mt-4 text-center text-sm">
-                                        Already have an account?{' '}
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsLogin(true)}
-                                            className="text-blue-600 underline"
-                                        >
-                                            Login
-                                        </button>
-                                    </p>
-                                </FormInputField>
-                            </form>
-                        )}
+                                        {/* Email */}
+                                        <FormInputField>
+                                            <FormLabel htmlFor="email" textLabel="Email" />
+                                            <FormInput
+                                                id="email"
+                                                type="email"
+                                                placeholder="example@email.com"
+                                                value={registerForm.data.email}
+                                                onChange={(e) => registerForm.setData('email', e.target.value)}
+                                                onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                                                message={registerForm.errors.email}
+                                                required
+                                                className="w-full"
+                                            />
+                                        </FormInputField>
+
+                                        {/* Phone Number */}
+                                        <FormInputField>
+                                            <FormLabel htmlFor="phone_number" textLabel="Phone Number" />
+                                            <FormInput
+                                                id="phone_number"
+                                                type="tel"
+                                                placeholder="09xxxxxxxxx"
+                                                value={registerForm.data.phone_number}
+                                                onChange={(e) => registerForm.setData('phone_number', e.target.value)}
+                                                onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                                                message={registerForm.errors.phone_number}
+                                                required
+                                                className="w-full"
+                                            />
+                                        </FormInputField>
+
+                                        {/* Barangay Dropdown */}
+                                        <FormInputField>
+                                            <FormLabel htmlFor="barangay" textLabel="Barangay" />
+                                            <select
+                                                id="barangay"
+                                                value={registerForm.data.barangay}
+                                                onChange={(e) => registerForm.setData('barangay', e.target.value)}
+                                                onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                                                className="w-full rounded-lg border border-gray-300 p-2 focus:border-green-600 focus:outline-none"
+                                                required
+                                            >
+                                                <option value="">Select Barangay</option>
+                                                {barangays.map((barangay: any) => (
+                                                    <option key={barangay.id} value={barangay.name}>
+                                                        {barangay.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </FormInputField>
+
+                                        {/* Password */}
+                                        <FormInputField>
+                                            <FormLabel htmlFor="password" textLabel="Password" />
+                                            <FormInput
+                                                id="password"
+                                                type="password"
+                                                placeholder="********"
+                                                value={registerForm.data.password}
+                                                onChange={(e) => registerForm.setData('password', e.target.value)}
+                                                onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                                                message={registerForm.errors.password}
+                                                required
+                                                className="w-full"
+                                            />
+                                        </FormInputField>
+
+                                        <FormInputField>
+                                            <FormLabel htmlFor="password_confirmation" textLabel="Confirm Password" />
+                                            <FormInput
+                                                id="password_confirmation"
+                                                type="password"
+                                                placeholder="********"
+                                                value={registerForm.data.password_confirmation}
+                                                onChange={(e) => registerForm.setData('password_confirmation', e.target.value)}
+                                                onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                                                message={registerForm.errors.password_confirmation}
+                                                required
+                                                className="w-full"
+                                            />
+                                        </FormInputField>
+                                    </div>
+
+                                    {/* Submit & switch - kept outside scroll area so it's always visible */}
+                                    <FormInputField>
+                                        <FormButton className="mt-3 w-full" submit="Sign Up" />
+                                        <p className="mt-4 text-center text-sm">
+                                            Already have an account?{' '}
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsLogin(true)}
+                                                className="text-blue-600 underline"
+                                            >
+                                                Login
+                                            </button>
+                                        </p>
+                                    </FormInputField>
+                                </form>
+                            )}
+                        </div>
                     </motion.div>
                 </motion.div>
             )}

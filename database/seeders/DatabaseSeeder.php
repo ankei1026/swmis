@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'id' => 1,
-            'name' => 'Admin Swmis',
+            'name' => 'Jane Doe',
             'email' => 'admin@test.com',
             'role' => 'admin',
             'barangay' => 'Tabon',
@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'id' => 2,
-            'name' => 'Driver Swmis',
+            'name' => 'Will Smith',
             'email' => 'driver@test.com',
             'role' => 'driver',
             'barangay' => 'Tabon',
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'id' => 3,
-            'name' => 'Resident Swmis',
+            'name' => 'Chris Blow',
             'email' => 'resident@test.com',
             'role' => 'resident',
             'barangay' => 'Tabon',

@@ -100,7 +100,12 @@ Route::prefix('resident')
         Route::get('/user-verification/{id}', [UserVerificationController::class, 'show'])->name('user.user-verification.show');
 
         Route::get('/schedule', [ResidentScheduleController::class, 'index'])->name('resident.schedule');
+
         Route::get('/collectiontracker', [ResidentWasteTrackerController::class, 'index'])->name('resident.collectiontracker');
+
+        Route::get('/monitoring/live-updates', [ResidentWasteTrackerController::class, 'getLiveUpdates'])->name('resident.monitoring.live-updates');
+
+        // Scheduling and Monitoring
         Route::get('/profile', [ResidentProfileController::class, 'index'])->name('resident.profile');
     });
 

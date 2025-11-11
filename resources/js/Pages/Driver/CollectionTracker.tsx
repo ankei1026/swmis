@@ -31,41 +31,32 @@ interface Props {
     schedules: Schedule[];
 }
 
-// Custom SVG Location Icon Component
-const LocationIcon: React.FC<{ size?: number }> = ({ size = 32 }) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        xmlSpace="preserve"
-        width={size}
-        height={size}
-        style={{
-            shapeRendering: 'geometricPrecision',
-            textRendering: 'geometricPrecision',
-            imageRendering: 'optimizeQuality',
-            fillRule: 'evenodd',
-            clipRule: 'evenodd'
-        }}
-        viewBox="0 0 6.827 6.827"
-    >
-        <g id="Layer_x0020_1">
-            <path
-                d="M4.304 2.189a.89.89 0 1 0-1.781 0 .89.89 0 0 0 1.78 0z"
-                style={{ fill: '#64ffda' }}
-            />
-            <path
-                style={{ fill: 'none' }}
-                d="M0 0h6.827v6.827H0z"
-            />
-            <path
-                style={{ fill: 'none' }}
-                d="M.853.853h5.12v5.12H.853z"
-            />
-            <path
-                d="M3.413.853c.776 0 1.405.585 1.405 1.305 0 .485-1.164 3.18-1.405 3.815-.17-.447-1.405-3.298-1.405-3.815 0-.72.63-1.305 1.405-1.305zm0 .446a.89.89 0 1 1 0 1.78.89.89 0 0 1 0-1.78z"
-                style={{ fill: '#26a69a' }}
-            />
-        </g>
-    </svg>
+// Custom Truck Icon using your SVG
+const TruckIcon: React.FC<{ size?: number }> = ({ size = 240 }) => (
+    <div style={{ width: size, height: size }}>
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={size}
+            height={size}
+            viewBox="0 0 128 128"
+        >
+            <path d="M99.844 83.288a7.546 7.546 0 1 1-7.555-7.547 7.554 7.554 0 0 1 7.555 7.547z" fill="#ffad5a" />
+            <path d="M109.272 66.515v16.773h-9.428a7.546 7.546 0 1 0-15.092 0h-5.49V50.927h14.422a15.585 15.585 0 0 1 15.588 15.588z" fill="#f9d16e" />
+            <path d="M79.262 45.116v38.172H59.314a7.547 7.547 0 1 0-15.093 0 7.546 7.546 0 1 0-15.092 0h-10.4V69.4L31.58 45.116z" fill="#4f9da6" />
+            <path d="M87.465 57.26h5.949a9.772 9.772 0 0 1 9.772 9.772v.805H87.465V57.26z" fill="#2d1f5e" />
+            <g fill="#fff8e3">
+                <path d="M50.447 59.8a1.5 1.5 0 0 1-1.3-2.25l1.88-3.256a3.371 3.371 0 0 1 5.838 0l1.861 3.225a1.5 1.5 0 0 1-2.6 1.5l-1.86-3.224a.339.339 0 0 0-.642 0l-1.879 3.255a1.5 1.5 0 0 1-1.298.75zM59.949 69.74h-3.48a1.5 1.5 0 0 1 0-3h3.48a.37.37 0 0 0 .321-.555l-1.762-3.052a1.5 1.5 0 0 1 2.6-1.5l1.762 3.052a3.37 3.37 0 0 1-2.919 5.055zM51.219 69.74h-3.272a3.37 3.37 0 0 1-2.919-5.055l1.533-2.675a1.5 1.5 0 1 1 2.6 1.492l-1.536 2.679a.358.358 0 0 0 0 .374.354.354 0 0 0 .321.185h3.272a1.5 1.5 0 1 1 0 3z" />
+            </g>
+            <path d="M44.221 83.288a7.546 7.546 0 1 1-7.546-7.547 7.552 7.552 0 0 1 7.546 7.547z" fill="#ffad5a" />
+            <path d="M18.728 75.741h17.947a7.546 7.546 0 0 0-7.546 7.547h-10.4z" fill="#3e8f93" />
+            <circle cx="51.767" cy="83.288" r="7.546" fill="#ffad5a" />
+            <path d="M36.675 75.741h15.092a7.541 7.541 0 0 0-7.546 7.547 7.546 7.546 0 0 0-7.546-7.547zM79.262 75.741v7.547H59.314a7.547 7.547 0 0 0-7.547-7.547z" fill="#3e8f93" />
+            <path d="M94.267 83.288a1.969 1.969 0 1 1-1.969-1.97 1.97 1.97 0 0 1 1.969 1.97z" fill="#fff8e3" />
+            <circle cx="51.767" cy="83.288" r="1.969" fill="#fff8e3" />
+            <path d="M38.644 83.288a1.969 1.969 0 1 1-1.969-1.97 1.969 1.969 0 0 1 1.969 1.97z" fill="#fff8e3" />
+            <path d="M108.677 80.7H106.1a1.75 1.75 0 0 1 0-3.5h2.574a1.75 1.75 0 0 1 0 3.5zM113.541 92.584H14.459a1.75 1.75 0 0 1 0-3.5h99.082a1.75 1.75 0 0 1 0 3.5zM111.847 85.037h-2.575a1.75 1.75 0 0 1 0-3.5h2.575a1.75 1.75 0 1 1 0 3.5zM18.728 85.037h-2.575a1.75 1.75 0 1 1 0-3.5h2.575a1.75 1.75 0 1 1 0 3.5z" fill="#2d1f5e" />
+        </svg>
+    </div>
 );
 
 // Helper function outside component
@@ -81,8 +72,7 @@ const getStatusColor = (status: string) => {
     return colors[status as keyof typeof colors] || '#6B7280';
 };
 
-// Status badge component with improved styling
-// Status badge component with improved styling
+// Status badge component
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     const getBadgeStyle = () => {
         const baseStyle = "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-colors";
@@ -93,7 +83,7 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
             case 'completed': return `${baseStyle} bg-green-100 text-green-800 border border-green-300`;
             case 'departed': return `${baseStyle} bg-yellow-100 text-yellow-800 border border-yellow-300`;
             case 'failed': return `${baseStyle} bg-red-100 text-red-800 border border-red-300`;
-            case 'success': return `${baseStyle} bg-green-100 text-green-800 border border-green-300`; // Added success case
+            case 'success': return `${baseStyle} bg-green-100 text-green-800 border border-green-300`;
             case 'in_progress': return `${baseStyle} bg-yellow-100 text-yellow-800 border border-yellow-300`;
             default: return `${baseStyle} bg-gray-100 text-gray-800 border border-gray-300`;
         }
@@ -107,7 +97,7 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
             case 'completed': return '✅';
             case 'departed': return '🚗';
             case 'failed': return '❌';
-            case 'success': return '🎯'; // Added success icon
+            case 'success': return '🎯';
             case 'in_progress': return '🚛';
             default: return '⏳';
         }
@@ -121,68 +111,60 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     );
 };
 
-// Status text component
-const StatusText: React.FC<{ status: string }> = ({ status }) => {
-    const getTextColor = () => {
-        switch (status) {
-            case 'pending': return 'text-gray-700';
-            case 'arrived': return 'text-blue-700';
-            case 'collecting': return 'text-purple-700';
-            case 'completed': return 'text-green-700';
-            case 'departed': return 'text-yellow-700';
-            case 'failed': return 'text-red-700';
-            case 'success': return 'text-green-700'; // Added success case
-            case 'in_progress': return 'text-yellow-700';
-            default: return 'text-gray-700';
-        }
-    };
-
-    return (
-        <span className={`${getTextColor()} font-semibold`}>
-            {status.replace('_', ' ').toUpperCase()}
-        </span>
-    );
-};
-
 const CollectionTracker: React.FC<Props> = ({ schedules }) => {
     const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
     const [currentAction, setCurrentAction] = useState<string>('');
 
-    // Set first schedule as selected by default
+    // Set selected schedule from localStorage or default to first schedule
     useEffect(() => {
-        if (schedules.length > 0 && !selectedSchedule) {
+        if (schedules.length > 0) {
+            // Try to get the last selected schedule from localStorage
+            const savedScheduleId = localStorage.getItem('selectedScheduleId');
+            
+            if (savedScheduleId) {
+                const savedSchedule = schedules.find(s => s.id === parseInt(savedScheduleId));
+                if (savedSchedule) {
+                    setSelectedSchedule(savedSchedule);
+                    return;
+                }
+            }
+            
+            // If no saved schedule or saved schedule not found, use the first one
             setSelectedSchedule(schedules[0]);
         }
     }, [schedules]);
 
-    // Get current active station (the one that should show the location icon)
+    // Save selected schedule to localStorage whenever it changes
+    useEffect(() => {
+        if (selectedSchedule) {
+            localStorage.setItem('selectedScheduleId', selectedSchedule.id.toString());
+        }
+    }, [selectedSchedule]);
+
+    // Get current active station
     const getCurrentActiveStation = useMemo(() => {
         if (!selectedSchedule || !selectedSchedule.stations) return null;
 
         const stations = selectedSchedule.stations.sort((a, b) => a.order - b.order);
-
-        // Find stations in different states
-        const arrivedStation = stations.find(station => station.status === 'arrived');
+        
+        // First, look for stations that are actively being worked on
         const collectingStation = stations.find(station => station.status === 'collecting');
+        const arrivedStation = stations.find(station => station.status === 'arrived');
+        
+        // If we're actively collecting or arrived at a station, that's the current one
+        if (collectingStation) return collectingStation;
+        if (arrivedStation) return arrivedStation;
+        
+        // If no active station, find the first pending station
         const pendingStations = stations.filter(station => station.status === 'pending');
+        if (pendingStations.length > 0) return pendingStations[0];
 
-        // Priority: arrived > collecting > first pending
-        if (arrivedStation) {
-            return arrivedStation;
-        }
-        if (collectingStation) {
-            return collectingStation;
-        }
-        if (pendingStations.length > 0) {
-            return pendingStations[0]; // First pending station
-        }
-
-        // If all stations are completed/departed, return the last station
+        // If all stations are completed/departed, return the last one
         const completedStations = stations.filter(station =>
             station.status === 'completed' || station.status === 'departed'
         );
         if (completedStations.length > 0) {
-            return completedStations[completedStations.length - 1]; // Last completed station
+            return completedStations[completedStations.length - 1];
         }
 
         return null;
@@ -191,13 +173,9 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
     // Check if this is the last station
     const isLastStation = useMemo(() => {
         if (!selectedSchedule || !selectedSchedule.stations) return false;
-
         const stations = selectedSchedule.stations.sort((a, b) => a.order - b.order);
         const currentStation = getCurrentActiveStation;
-
         if (!currentStation) return false;
-
-        // Check if this is the highest order station
         const maxOrder = Math.max(...stations.map(s => s.order));
         return currentStation.order === maxOrder;
     }, [selectedSchedule, getCurrentActiveStation]);
@@ -217,19 +195,19 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                     <div className="p-3 min-w-[280px] bg-white rounded-lg shadow-lg border">
                         <div className="flex items-center gap-3 mb-2">
                             {isCurrentActiveStation ? (
-                                <div className="text-teal-500">
-                                    <LocationIcon size={20} />
+                                <div className="text-blue-500 flex-shrink-0">
+                                    <TruckIcon size={32} />
                                 </div>
                             ) : (
                                 <div className="w-4 h-4 rounded-full flex-shrink-0" style={{
                                     backgroundColor: getStatusColor(station.status)
                                 }}></div>
                             )}
-                            <div>
+                            <div className="flex-1 min-w-0">
                                 <strong className="text-sm font-semibold text-gray-900 block">{station.name}</strong>
                                 {isCurrentActiveStation && (
-                                    <span className="text-xs text-teal-600 font-medium">
-                                        {isLastStation ? 'Final Station' : 'Current Location'}
+                                    <span className="text-xs text-blue-600 font-medium">
+                                        {isLastStation ? '🏁 Final Station' : '🚛 Collection Truck'}
                                     </span>
                                 )}
                             </div>
@@ -259,20 +237,17 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                         </div>
                     </div>
                 ),
-                color: isCurrentActiveStation ? '#26a69a' : getStatusColor(station.status),
+                color: getStatusColor(station.status),
                 useCircle: !isCurrentActiveStation,
                 useSvgIcon: isCurrentActiveStation,
-                svgIcon: isCurrentActiveStation ? (
-                    <LocationIcon size={28} />
-                ) : undefined,
-                radius: isCurrentActiveStation ? 8 : (station.status === 'arrived' || station.status === 'collecting' ? 12 : 8),
+                svgIcon: isCurrentActiveStation ? <TruckIcon size={40} /> : undefined,
+                radius: isCurrentActiveStation ? 80 : 8,
             };
         });
     }, [selectedSchedule, getCurrentActiveStation, isLastStation]);
 
     const routePath = useMemo(() => {
         if (!selectedSchedule || !selectedSchedule.stations) return [];
-
         return selectedSchedule.stations
             .sort((a, b) => a.order - b.order)
             .map(station => [station.latitude, station.longitude] as [number, number]);
@@ -310,14 +285,20 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
         });
     };
 
+    const handleScheduleChange = (schedule: Schedule | null) => {
+        setSelectedSchedule(schedule);
+        // The useEffect above will automatically save to localStorage
+    };
+
     const getNextAction = (station: Station) => {
-        // Only show actions for the current active station
         const currentActiveStation = getCurrentActiveStation;
+        
+        // Only show actions for the current active station
         if (!currentActiveStation || currentActiveStation.id !== station.id) {
             return null;
         }
 
-        // If this is the last station and it's completed, show complete route instead of depart
+        // Special case for last station
         if (isLastStation && station.status === 'completed') {
             return {
                 label: 'Complete Route',
@@ -328,15 +309,43 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
             };
         }
 
+        // Normal flow - must go through each status sequentially
         switch (station.status) {
             case 'pending':
-                return { label: 'Mark Arrived', action: 'arrived', icon: '📍', color: 'blue' };
+                return { 
+                    label: 'Mark Arrived', 
+                    action: 'arrived', 
+                    icon: '📍', 
+                    color: 'blue' 
+                };
             case 'arrived':
-                return { label: 'Start Collecting', action: 'collecting', icon: '🔄', color: 'purple' };
+                return { 
+                    label: 'Start Collecting', 
+                    action: 'collecting', 
+                    icon: '🔄', 
+                    color: 'purple' 
+                };
             case 'collecting':
-                return { label: 'Complete', action: 'completed', icon: '✅', color: 'green' };
+                return { 
+                    label: 'Complete Collection', 
+                    action: 'completed', 
+                    icon: '✅', 
+                    color: 'green' 
+                };
             case 'completed':
-                return { label: 'Depart', action: 'departed', icon: '🚗', color: 'yellow' };
+                // Only show "Depart" if this isn't the last station
+                if (!isLastStation) {
+                    return { 
+                        label: 'Depart to Next', 
+                        action: 'departed', 
+                        icon: '🚗', 
+                        color: 'yellow' 
+                    };
+                }
+                return null;
+            case 'departed':
+                // After departing, the next station should automatically become active
+                return null;
             default:
                 return null;
         }
@@ -347,10 +356,6 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
         selectedSchedule.stations.length > 0 &&
         selectedSchedule.stations.every(s => s.status === 'completed' || s.status === 'departed');
 
-    // Filter for completed schedules
-    const completedSchedules = schedules.filter(s => s.status === 'success'); // Changed from 'completed'
-
-    // Calculate completion stats
     const completionStats = selectedSchedule ? {
         total: selectedSchedule.stations.length,
         completed: selectedSchedule.stations.filter(s => s.status === 'completed' || s.status === 'departed').length,
@@ -379,7 +384,7 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                                             value={selectedSchedule?.id || ''}
                                             onChange={(e) => {
                                                 const schedule = schedules.find(s => s.id === parseInt(e.target.value));
-                                                setSelectedSchedule(schedule || null);
+                                                handleScheduleChange(schedule || null);
                                             }}
                                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
                                         >
@@ -399,7 +404,6 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                                     )}
                                 </div>
 
-                                {/* Schedule Overview */}
                                 {selectedSchedule && (
                                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100">
                                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -419,8 +423,8 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                                                         <span>{selectedSchedule.stations.length} Stations</span>
                                                     </div>
                                                     {completionStats?.currentStation && (
-                                                        <div className="flex items-center gap-1.5 text-teal-600 font-medium">
-                                                            <LocationIcon size={16} />
+                                                        <div className="flex items-center gap-1.5 text-blue-600 font-medium">
+                                                            <TruckIcon size={24} />
                                                             <span>
                                                                 {completionStats.isLastStation ? 'Final: ' : 'Current: '}
                                                                 {completionStats.currentStation}
@@ -473,7 +477,6 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                                             </div>
                                         </div>
 
-                                        {/* Progress Section */}
                                         <div className="mt-4">
                                             <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
                                                 <span>Route Progress</span>
@@ -495,9 +498,17 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                                 <div className="p-4 border-b bg-gray-50">
                                     <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                         <span>🗺️</span>
-                                        Route Map
+                                        Live Route Tracking
                                     </h3>
-                                    <p className="text-sm text-gray-600 mt-1">Real-time tracking of your collection route</p>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                        <span className="inline-flex items-center gap-1 mr-3">
+                                            <TruckIcon size={16} /> Current Station
+                                        </span>
+                                        <span className="inline-flex items-center gap-1">
+                                            <div className="w-3 h-3 rounded-full bg-gray-500 mr-1"></div>
+                                            Other Stations
+                                        </span>
+                                    </p>
                                 </div>
                                 <div className="p-2">
                                     <Map
@@ -540,10 +551,10 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                                     {completionStats.currentStation && (
                                         <div className={`mt-4 p-3 rounded-lg border ${completionStats.isLastStation
                                             ? 'bg-green-50 border-green-200'
-                                            : 'bg-teal-50 border-teal-200'
+                                            : 'bg-blue-50 border-blue-200'
                                             }`}>
-                                            <div className="flex items-center gap-2 text-teal-700">
-                                                <LocationIcon size={18} />
+                                            <div className="flex items-center gap-2 text-blue-700">
+                                                <TruckIcon size={16} />
                                                 <div>
                                                     <div className="text-sm font-semibold">
                                                         {completionStats.isLastStation ? 'Final Station' : 'Current Station'}
@@ -580,19 +591,19 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                                                     return (
                                                         <div
                                                             key={station.id}
-                                                            className={`bg-white p-4 rounded-lg border-l-4 shadow-sm hover:shadow-md transition-all duration-200 ${isCurrentActive ? 'ring-2 ring-teal-500 ring-opacity-50' : ''
+                                                            className={`bg-white p-4 rounded-lg border-l-4 shadow-sm hover:shadow-md transition-all duration-200 ${isCurrentActive ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
                                                                 }`}
                                                             style={{ borderLeftColor: borderColor }}
                                                         >
                                                             <div className="flex items-start justify-between gap-3">
                                                                 <div className="flex items-start gap-3 flex-1">
                                                                     <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border mt-0.5 relative ${isCurrentActive
-                                                                        ? 'bg-teal-100 text-teal-700 border-teal-300'
+                                                                        ? 'bg-blue-100 text-blue-700 border-blue-300'
                                                                         : 'bg-gray-100 text-gray-700 border-gray-300'
                                                                         }`}>
                                                                         {station.order + 1}
                                                                         {isCurrentActive && (
-                                                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-teal-500 rounded-full animate-ping"></div>
+                                                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-ping"></div>
                                                                         )}
                                                                         {isStationLast && (
                                                                             <div className="absolute -bottom-1 -right-1 text-xs">🏁</div>
@@ -604,8 +615,8 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                                                                                 {station.name}
                                                                             </h4>
                                                                             {isCurrentActive && (
-                                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
-                                                                                    <LocationIcon size={12} />
+                                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                                    <TruckIcon size={10} />
                                                                                     {isLastStation ? 'Final' : 'Current'}
                                                                                 </span>
                                                                             )}
@@ -644,14 +655,23 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                                                                             station.id,
                                                                             nextAction.action
                                                                         )}
-                                                                        disabled={currentAction === `updating-${station.id}`}
+                                                                        disabled={currentAction.includes(`updating-${station.id}`)}
                                                                         className={`flex items-center gap-1.5 ${nextAction.isFinalAction
-                                                                            ? 'bg-green-600 hover:bg-green-700'
-                                                                            : `bg-${nextAction.color}-500 hover:bg-${nextAction.color}-600`
+                                                                                ? 'bg-green-600 hover:bg-green-700'
+                                                                                : nextAction.color === 'blue'
+                                                                                    ? 'bg-blue-500 hover:bg-blue-600'
+                                                                                    : nextAction.color === 'purple'
+                                                                                        ? 'bg-purple-500 hover:bg-purple-600'
+                                                                                        : nextAction.color === 'green'
+                                                                                            ? 'bg-green-500 hover:bg-green-600'
+                                                                                            : 'bg-yellow-500 hover:bg-yellow-600'
                                                                             } text-white px-3 py-2 rounded-lg text-xs font-semibold disabled:opacity-50 transition-all duration-200 whitespace-nowrap shadow-sm hover:shadow-md flex-shrink-0`}
                                                                     >
                                                                         {currentAction === `updating-${station.id}` ? (
-                                                                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                            <>
+                                                                                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                                <span>Updating...</span>
+                                                                            </>
                                                                         ) : (
                                                                             <>
                                                                                 <span>{nextAction.icon}</span>

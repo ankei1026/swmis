@@ -99,7 +99,7 @@ class SchedulingController extends Controller
                 ]);
             });
 
-            return redirect()->route('admin.scheduling.create')
+            return redirect()->route('admin.scheduling.list')
                 ->with('success', 'Schedule created successfully!');
         } catch (\Exception $e) {
             return redirect()->back()

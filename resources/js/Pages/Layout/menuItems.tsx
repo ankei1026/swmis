@@ -53,14 +53,14 @@ export const secondaryMenuResident = [
         href: '/resident/complaint',
     },
     {
-        text: 'Collection Tracker',
-        icon: <EyeIcon />,
-        href: '/resident/collectiontracker',
-    },
-    {
         text: 'Schedule',
         icon: <Calendar1Icon />,
         href: '/resident/schedule',
+    },
+    {
+        text: 'Collection Tracker',
+        icon: <EyeIcon />,
+        href: '/resident/collectiontracker',
     },
     {
         text: 'Verify',

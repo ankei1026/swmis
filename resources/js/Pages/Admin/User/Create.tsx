@@ -108,7 +108,7 @@ const UserCreate = () => {
                             <FormInput
                                 id="phone_number"
                                 type="text"
-                                placeholder="+63 912 345 6789"
+                                placeholder="09xxxxxxxxx"
                                 value={data.phone_number}
                                 onChange={(e) => setData('phone_number', e.target.value)}
                                 message={errors.phone_number}
