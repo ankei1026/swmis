@@ -21,7 +21,7 @@ const Profile = () => {
         <Layout>
             <Head title="Profile" />
             <Title title="My Profile" />
-            <div className='w-full bg-gray-100 py-6 rounded-lg'>
+            <div className='w-full bg-gray-100 py-6 rounded-lg mt-6'>
                 <div className="mx-auto max-w-xl">
                     <Card className="border border-gray-200">
                         <CardHeader className="flex flex-col items-center pt-8 pb-6">

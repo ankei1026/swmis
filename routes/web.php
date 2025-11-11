@@ -59,6 +59,9 @@ Route::prefix('admin')
         Route::put('/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
+        // In routes/web.php
+        Route::get('/monitoring/live-updates', [MonitoringController::class, 'getLiveUpdates'])->name('admin.monitoring.live-updates');
+
         // Scheduling and Monitoring
         Route::get('/scheduling/create', [SchedulingController::class, 'createScheduling'])->name('admin.scheduling.create');
         Route::get('/scheduling/list', [SchedulingController::class, 'listScheduling'])->name('admin.scheduling.list');
@@ -130,7 +133,13 @@ Route::prefix('driver')
         Route::put('/scheduleroute/{id}', [ScheduleRouteController::class, 'update'])->name('driver.scheduleroute.update');
         Route::delete('/scheduleroute/{id}', [ScheduleRouteController::class, 'destroy'])->name('driver.scheduleroute.destroy');
 
-        Route::get('/collectiontracker', [WasteTrackerDriverController::class, 'index'])->name('driver.collectiontracker');
+        Route::get('/collectiontracker', [WasteTrackerDriverController::class, 'index'])->name('driver.collection-tracker');
+        Route::post('/schedules/{schedule}/start', [WasteTrackerDriverController::class, 'startSchedule'])->name('driver.schedules.start');
+        Route::patch('/schedules/{schedule}/stations/{station}', [WasteTrackerDriverController::class, 'updateStationStatus'])->name('driver.stations.update');
+        Route::post('/schedules/{schedule}/complete', [WasteTrackerDriverController::class, 'completeSchedule'])->name('driver.schedules.complete');
+        Route::post('/schedules/{schedule}/fail', [WasteTrackerDriverController::class, 'failSchedule'])->name('driver.schedules.fail');
+        Route::get('/schedules/{schedule}', [WasteTrackerDriverController::class, 'getSchedule'])->name('driver.schedules.show');
+        Route::post('/schedules/{schedule}/abort', [WasteTrackerDriverController::class, 'abortSchedule'])->name('driver.schedules.abort');
 
         Route::get('/schedule', [DriverScheduleController::class, 'index'])->name('driver.schedule');
 

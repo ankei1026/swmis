@@ -16,7 +16,7 @@ interface TitleProps extends HTMLAttributes<HTMLHeadingElement> {
 }
 
 const Title = forwardRef<HTMLHeadingElement, TitleProps>(
-    ({ title, children, subtitle, className = "text-2xl font-bold mb-4", ...rest }, ref) => {
+    ({ title, children, subtitle, className = "text-4xl font-bold", ...rest }, ref) => {
         const content = title ?? children;
 
         return (
@@ -29,7 +29,7 @@ const Title = forwardRef<HTMLHeadingElement, TitleProps>(
                     {content}
                 </h1>
                 {subtitle ? (
-                    <p className="title-subtitle text-sm" aria-hidden="false">
+                    <p className="title-subtitle text-lg mb-4" aria-hidden="false">
                         {subtitle}
                     </p>
                 ) : null}

@@ -168,7 +168,7 @@ class SchedulingController extends Controller
             'date' => 'required|date',
             'time' => 'required|date_format:H:i:s',
             'schedule_route_id' => 'required|exists:schedule_routes,id',
-            'status' => 'required|in:Success,Failed,Pending',
+            'status' => 'required|in:Success,Failed,Pending,In_progess',
             'type' => 'required|in:Biodegradable (Malata),Non-Biodegradable (Di-Malata)',
         ]);
 

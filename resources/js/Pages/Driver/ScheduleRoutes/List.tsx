@@ -187,8 +187,8 @@ const ScheduleRouteList = ({ scheduleroutes }: Props) => {
 
     return (
         <Layout>
-            <Head title="Schedule Route List" />
-            <Title title="Schedule Route List" subtitle="View and manage schedule routes" />
+            <Head title="Schedule Route" />
+            <Title title="Schedule Route" subtitle="View and manage schedule routes" />
 
             {/* Action Buttons - Fixed flex layout */}
             <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">

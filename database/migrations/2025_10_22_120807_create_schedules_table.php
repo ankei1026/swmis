@@ -20,7 +20,9 @@ return new class extends Migration
             $table->unsignedBigInteger('driver_id');
             $table->foreign('driver_id')->references('id')->on('users')->onDelete('cascade');
             $table->enum('type', ['Biodegradable (Malata)', 'Non-Biodegradable (Di-Malata)']);
-            $table->enum('status', ['success', 'failed', 'pending'])->default('pending');
+            $table->enum('status', ['success', 'failed', 'pending', 'in_progress'])->default('pending');
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
         });
     }

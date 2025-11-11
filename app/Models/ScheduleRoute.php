@@ -29,14 +29,13 @@ class ScheduleRoute extends Model
     public function stationRoutes()
     {
         return $this->belongsToMany(StationRoute::class, 'route_station', 'schedule_route_id', 'station_route_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
-
-    // Or if you have a direct relationship (adjust based on your actual database structure):
-    // public function stationRoutes()
-    // {
-    //     return $this->hasMany(StationRoute::class, 'schedule_route_id');
-    // }
+    
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class, 'schedule_route_id');
+    }
 
     // Your existing accessor (keep this)
     public function getStationRoutesAttribute()

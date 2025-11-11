@@ -39,7 +39,7 @@ const UserList = () => {
                     Create New User
                 </button>
             </div>
-            <div className='w-full bg-gray-100 p-6 rounded-lg'>
+            <div className='w-full bg-gray-100 py-4 rounded-lg'>
                 <div className="flex w-full items-center justify-center">
                     <DataTable
                         columns={userColumns}

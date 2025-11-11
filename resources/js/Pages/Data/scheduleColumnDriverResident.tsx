@@ -128,6 +128,8 @@ const scheduleColumnsDriverResident: GridColDef[] = [
         field: 'status',
         headerName: 'Status',
         width: 120,
+        align: 'center',
+        headerAlign: 'center',
         flex: 1,
         renderCell: (params) => (
             <Chip

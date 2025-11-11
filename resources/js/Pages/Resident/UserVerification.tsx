@@ -232,7 +232,7 @@ const UserVerificationCreate = ({ verifications }: UserVerificationCreateProps) 
 
             {/* Submission History Table */}
             <div className='w-full bg-gray-100 py-6 rounded-lg mt-4'>
-                <div className="p-6">
+                <div className="">
                     <div className="flex h-full items-center justify-center">
                         <DataTable
                             columns={columns}

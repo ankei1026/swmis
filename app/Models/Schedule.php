@@ -17,6 +17,15 @@ class Schedule extends Model
         'driver_id',
         'status',
         'type',
+        'started_at',
+        'completed_at'
+    ];
+
+    protected $casts = [
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function driver()
@@ -46,5 +55,30 @@ class Schedule extends Model
     public function getStationRoutesAttribute()
     {
         return $this->scheduleRoute->station_routes ?? collect();
+    }
+
+    public function stationLogs()
+    {
+        return $this->hasMany(ScheduleStationLog::class)->orderBy('station_order');
+    }
+
+    public function getCurrentStationAttribute()
+    {
+        return $this->stationLogs()
+            ->whereIn('status', ['arrived', 'collecting'])
+            ->orWhere(function ($query) {
+                $query->where('status', 'pending')
+                    ->whereNull('completed_at');
+            })
+            ->orderBy('station_order')
+            ->first();
+    }
+
+    public function getProgressPercentageAttribute()
+    {
+        $totalStations = $this->stationLogs()->count();
+        $completedStations = $this->stationLogs()->where('status', 'completed')->count();
+
+        return $totalStations > 0 ? round(($completedStations / $totalStations) * 100) : 0;
     }
 }

@@ -16,18 +16,18 @@ const UsersInfo: React.FC<UsersInfoProps> = ({
     residentCount
 }) => {
     return (
-        <div className="mb-4">
-            <Title className="text-md font-semibold mb-2" title="Users Information" />
+        <div className="mb-4 my-6">
+            <Title className="text-lg text-gray-600 font-semibold mb-2" title="Users Information" />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Total Users */}
                 <Card className="border border-gray-200 bg-white shadow-sm">
                     <CardContent className="flex items-center gap-3 p-2">
                         <div className="p-2 rounded-lg">
-                            <Users className="text-blue-600" size={20} />
+                            <Users className="text-blue-600" size={30} />
                         </div>
                         <div>
-                            <h4 className="text-xs text-gray-500 font-medium">Total Users</h4>
-                            <p className="text-lg font-bold text-gray-900">{totalUsers}</p>
+                            <h4 className="text-md text-gray-500 font-medium">Total Users</h4>
+                            <p className="text-3xl font-bold text-gray-900">{totalUsers}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -36,11 +36,11 @@ const UsersInfo: React.FC<UsersInfoProps> = ({
                 <Card className="border border-gray-200 bg-white shadow-sm">
                     <CardContent className="flex items-center gap-3 p-2">
                         <div className="p-2 rounded-lg">
-                            <Shield className="text-purple-600" size={20} />
+                            <Shield className="text-purple-600" size={30} />
                         </div>
                         <div>
-                            <h4 className="text-xs text-gray-500 font-medium">Admins</h4>
-                            <p className="text-lg font-bold text-gray-900">{adminCount}</p>
+                            <h4 className="text-md text-gray-500 font-medium">Admins</h4>
+                            <p className="text-3xl font-bold text-gray-900">{adminCount}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -49,11 +49,11 @@ const UsersInfo: React.FC<UsersInfoProps> = ({
                 <Card className="border border-gray-200 bg-white shadow-sm">
                     <CardContent className="flex items-center gap-3 p-2">
                         <div className="p-2 rounded-lg">
-                            <Truck className="text-amber-600" size={20} />
+                            <Truck className="text-amber-600" size={30} />
                         </div>
                         <div>
-                            <h4 className="text-xs text-gray-500 font-medium">Drivers</h4>
-                            <p className="text-lg font-bold text-gray-900">{driverCount}</p>
+                            <h4 className="text-md text-gray-500 font-medium">Drivers</h4>
+                            <p className="text-3xl font-bold text-gray-900">{driverCount}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -62,11 +62,11 @@ const UsersInfo: React.FC<UsersInfoProps> = ({
                 <Card className="border border-gray-200 bg-white shadow-sm">
                     <CardContent className="flex items-center gap-3 p-2">
                         <div className="p-2 rounded-lg">
-                            <Home className="text-green-600" size={20} />
+                            <Home className="text-green-600" size={30} />
                         </div>
                         <div>
-                            <h4 className="text-xs text-gray-500 font-medium">Residents</h4>
-                            <p className="text-lg font-bold text-gray-900">{residentCount}</p>
+                            <h4 className="text-md text-gray-500 font-medium">Residents</h4>
+                            <p className="text-3xl font-bold text-gray-900">{residentCount}</p>
                         </div>
                     </CardContent>
                 </Card>
