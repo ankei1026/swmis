@@ -49,8 +49,8 @@ const Dashboard = () => {
 
     return (
         <Layout>
-            <Head title="Dashboard" />
-            <Title title="Dashboard" />
+            <Head title="Driver Dashboard" />
+            <Title title="Driver Dashboard" />
             <div className="flex flex-col gap-6">
 
                 <GarbageInfo

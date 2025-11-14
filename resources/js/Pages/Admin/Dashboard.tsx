@@ -52,7 +52,7 @@ const Dashboard = () => {
     return (
         <Layout>
             <Head title="Admin Dashboard" />
-            <Title title="Dashboard" />
+            <Title title="Admin Dashboard" />
             <UsersInfo
                 totalUsers={totalUsers}
                 adminCount={adminCount}

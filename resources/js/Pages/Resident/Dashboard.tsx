@@ -44,15 +44,15 @@ const Dashboard = () => {
 
     return (
         <Layout>
-            <Head title="Dashboard" />
+            <Head title="Resident Dashboard" />
             <Title
-                title={`Welcome back, ${user.name}!`}
-                subtitle="Here's your dashboard overview"
+                subtitle={`Welcome back, ${user.name}!`}
+                title="Resident Dashboard"
             />
 
             <div className="flex flex-col gap-6">
                 {/* User Info Card */}
-                <div className='grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4'>
+                {/* <div className='grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4'>
                     <Card className="border">
                         <CardContent className="px-4 py-2">
                             <div className="flex items-center gap-4">
@@ -67,7 +67,7 @@ const Dashboard = () => {
                             </div>
                         </CardContent>
                     </Card>
-                </div>
+                </div> */}
                 <GarbageInfo
                     totalCollections={totalCollections}
                     totalSuccess={totalSuccess}
@@ -84,6 +84,12 @@ const Dashboard = () => {
                         mostSuccessfulRoute={mostSuccessfulRoute}
                         routeStations={routeStations}
                     />
+                </div>
+                <div className=''>
+                    <Title className="text-lg text-gray-600 font-semibold mb-2" title="Proper Segregation" />
+                    <div className='p-6 rounded-lg border shadow-md'>
+                        <img src="/assets/Propoer Segregation.jpg" alt="Uwu" />
+                    </div>
                 </div>
             </div>
         </Layout>
