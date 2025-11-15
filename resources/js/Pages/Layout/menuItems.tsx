@@ -1,6 +1,6 @@
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import { hr } from 'date-fns/locale';
-import { BellIcon, Calendar1Icon, CheckIcon, EyeIcon, GitPullRequestCreateIcon, HomeIcon, LandmarkIcon, ListIcon, LocationEditIcon, RouteIcon, User2Icon, UserIcon } from 'lucide-react';
+import { BellIcon, BuildingIcon, Calendar1Icon, CheckIcon, EyeIcon, GitPullRequestCreateIcon, HomeIcon, LandmarkIcon, ListIcon, LocationEditIcon, RouteIcon, User2Icon, UserIcon } from 'lucide-react';
 
 export const mainMenu = [
     {
@@ -18,13 +18,12 @@ export const mainMenu = [
     },
     {
         text: 'District',
-        icon: <User2Icon />,
+        icon: <BuildingIcon />,
         children: [
             { text: 'List', href: '/admin/district/list', icon: <ListIcon /> },
             { text: 'Create', href: '/admin/district/create', icon: <GitPullRequestCreateIcon /> },
         ],
     },
-
     {
         text: 'Station Routes',
         icon: <LandmarkIcon />,

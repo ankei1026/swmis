@@ -4,6 +4,7 @@ use App\Http\Controllers\{
     AdminController,
     BarangayController,
     ComplaintsController,
+    DistrictController,
     DriverComplaintController,
     DriverController,
     DriverScheduleController,
@@ -59,6 +60,14 @@ Route::prefix('admin')
         Route::get('/users/edit/{id}', [UserController::class, 'edit'])->name('admin.users.edit');
         Route::put('/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+
+        // Districts
+        Route::get('/district/create', [DistrictController::class, 'createDistrict'])->name('admin.district.create');
+        Route::get('/district/list', [DistrictController::class, 'listDistrict'])->name('admin.district.list');
+        Route::post('/district/store', [DistrictController::class, 'store'])->name('admin.district.store');
+        Route::get('/district/edit/{id}', [DistrictController::class, 'edit'])->name('admin.district.edit');
+        Route::put('/district/{id}', [DistrictController::class, 'update'])->name('admin.district.update');
+        Route::delete('/district/{id}', [DistrictController::class, 'destroy'])->name('admin.district.destroy');
 
         // In routes/web.php
         Route::get('/monitoring/live-updates', [MonitoringController::class, 'getLiveUpdates'])->name('admin.monitoring.live-updates');
