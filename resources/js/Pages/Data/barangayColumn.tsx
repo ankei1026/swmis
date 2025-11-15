@@ -9,25 +9,26 @@ import { route } from 'ziggy-js';
 
 // ✅ Edit barangay handler
 const handleEdit = (id: number) => {
-    router.visit(route('driver.barangay.edit', id));
+    router.visit(route('admin.barangay.edit', id));
+    toast.success('Navigated to edit page')
 };
 
 // ✅ Delete barangay handler
 const handleDelete = (id: number) => {
-    toast.warning('Are you sure you want to delete this barangay?', {
+    toast.warning('Are you sure you want to delete this purok?', {
         action: {
             label: 'Confirm',
             onClick: () => {
-                router.delete(route('driver.barangay.delete', id), {
+                router.delete(route('admin.barangay.delete', id), {
                     preserveScroll: true,
-                    onStart: () => toast.loading('Deleting barangay...'),
+                    onStart: () => toast.loading('Deleting purok...'),
                     onSuccess: () => {
                         toast.dismiss();
-                        toast.success('Barangay deleted successfully!');
+                        toast.success('Purok deleted successfully!');
                     },
                     onError: () => {
                         toast.dismiss();
-                        toast.error('Failed to delete barangay.');
+                        toast.error('Failed to delete purok.');
                     },
                 });
             },
@@ -38,22 +39,28 @@ const handleDelete = (id: number) => {
 
 // ✅ Barangay DataGrid column definitions
 const barangayColumns: GridColDef[] = [
-    { 
-        field: 'id', 
-        headerName: 'ID', 
+    {
+        field: 'id',
+        headerName: 'ID',
         width: 80,
         align: 'center',
         headerAlign: 'center'
     },
-    { 
-        field: 'name', 
-        headerName: 'Barangay Name', 
+    {
+        field: 'name',
+        headerName: 'Barangay Name',
         width: 250,
         flex: 1,
     },
-    { 
-        field: 'latitude', 
-        headerName: 'Latitude', 
+    {
+        field: 'district',
+        headerName: 'District Name',
+        width: 250,
+        flex: 1,
+    },
+    {
+        field: 'latitude',
+        headerName: 'Latitude',
         width: 150,
         align: 'center',
         headerAlign: 'center',
@@ -63,9 +70,9 @@ const barangayColumns: GridColDef[] = [
             </div>
         ),
     },
-    { 
-        field: 'longitude', 
-        headerName: 'Longitude', 
+    {
+        field: 'longitude',
+        headerName: 'Longitude',
         width: 150,
         align: 'center',
         headerAlign: 'center',
@@ -94,8 +101,8 @@ const barangayColumns: GridColDef[] = [
                             e.stopPropagation();
                             handleEdit(params.row.id);
                         }}
-                        sx={{ 
-                            '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' } 
+                        sx={{
+                            '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
                         }}
                     >
                         <EditIcon fontSize="small" />
@@ -109,8 +116,8 @@ const barangayColumns: GridColDef[] = [
                             e.stopPropagation();
                             handleDelete(params.row.id);
                         }}
-                        sx={{ 
-                            '&:hover': { backgroundColor: 'rgba(211, 47, 47, 0.04)' } 
+                        sx={{
+                            '&:hover': { backgroundColor: 'rgba(211, 47, 47, 0.04)' }
                         }}
                     >
                         <DeleteIcon fontSize="small" />

@@ -49,6 +49,16 @@ export const getComplaintColumns = (
             width: 140,
         },
         {
+            field: 'barangay',
+            headerName: 'Purok',
+            width: 200,
+            flex: 1,
+            renderCell: (params) => {
+                console.log('Barangay data:', params.value); // Debug log
+                return params.value || 'N/A';
+            },
+        },
+        {
             field: 'description',
             headerName: 'Description',
             flex: 2,
@@ -62,6 +72,8 @@ export const getComplaintColumns = (
         {
             field: 'status',
             headerName: 'Status',
+            headerAlign: 'center',
+            align: 'center',
             width: 130,
             renderCell: (params) => {
                 const role = params.value as string;

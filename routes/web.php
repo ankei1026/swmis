@@ -61,6 +61,14 @@ Route::prefix('admin')
         Route::put('/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
+        // Puroks(barngays)
+        Route::get('/barangays/create', [BarangayController::class, 'createBarangay'])->name('admin.barangay.create');
+        Route::get('/barangays/list', [BarangayController::class, 'listBarangay'])->name('admin.barangay.list');
+        Route::post('/barangays/store', [BarangayController::class, 'store'])->name('admin.barangay.store');
+        Route::get('/barangays/edit/{id}', [BarangayController::class, 'edit'])->name('admin.barangay.edit');
+        Route::put('/barangays/update/{id}', [BarangayController::class, 'update'])->name('admin.barangay.update');
+        Route::delete('/barangays/delete/{id}', [BarangayController::class, 'destroy'])->name('admin.barangay.delete');
+
         // Districts
         Route::get('/district/create', [DistrictController::class, 'createDistrict'])->name('admin.district.create');
         Route::get('/district/list', [DistrictController::class, 'listDistrict'])->name('admin.district.list');
@@ -140,13 +148,6 @@ Route::prefix('driver')
     ->middleware(['auth', 'role:driver'])
     ->group(function () {
         Route::get('/dashboard', [DriverController::class, 'index'])->name('driver.dashboard');
-
-        Route::get('/barangays/create', [BarangayController::class, 'createBarangay'])->name('driver.barangay.create');
-        Route::get('/barangays/list', [BarangayController::class, 'listBarangay'])->name('driver.barangay.list');
-        Route::post('/barangays/store', [BarangayController::class, 'store'])->name('driver.barangay.store');
-        Route::get('/barangays/edit/{id}', [BarangayController::class, 'edit'])->name('driver.barangay.edit');
-        Route::put('/barangays/update/{id}', [BarangayController::class, 'update'])->name('driver.barangay.update');
-        Route::delete('/barangays/delete/{id}', [BarangayController::class, 'destroy'])->name('driver.barangay.delete');
 
         Route::get('/collectiontracker', [WasteTrackerDriverController::class, 'index'])->name('driver.collection-tracker');
         Route::post('/schedules/{schedule}/start', [WasteTrackerDriverController::class, 'startSchedule'])->name('driver.schedules.start');

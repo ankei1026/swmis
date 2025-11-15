@@ -227,7 +227,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
                                         {/* Barangay Dropdown */}
                                         <FormInputField>
-                                            <FormLabel htmlFor="barangay" textLabel="Barangay" />
+                                            <FormLabel htmlFor="barangay" textLabel="Purok" />
                                             <select
                                                 id="barangay"
                                                 value={registerForm.data.barangay}
@@ -236,7 +236,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                                                 className="w-full rounded-lg border border-gray-300 p-2 focus:border-green-600 focus:outline-none"
                                                 required
                                             >
-                                                <option value="">Select Barangay</option>
+                                                <option value="">Select Purok</option>
                                                 {barangays.map((barangay: any) => (
                                                     <option key={barangay.id} value={barangay.name}>
                                                         {barangay.name}

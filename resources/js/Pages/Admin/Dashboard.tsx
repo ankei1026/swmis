@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Head, usePage } from '@inertiajs/react';
-import { CheckCircle, Truck, XCircle } from 'lucide-react';
+import { Calendar, CheckCircle, MapPin, Route, Truck, XCircle } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import chartData from '../Data/chartdata';
@@ -29,7 +29,11 @@ interface DashboardProps {
     }[];
     successCountsByRoute: Record<string, number>;
     mostSuccessfulRoute: string | null;
-    routeStations: number
+    routeStations: Record<string, any[]>;
+    totalBarangay: number;
+    totalStationRoute: number;
+    totalScheduleCount: number;
+
 }
 
 const Dashboard = () => {
@@ -46,7 +50,10 @@ const Dashboard = () => {
         weeklyPerformance,
         successCountsByRoute,
         mostSuccessfulRoute,
-        routeStations
+        routeStations,
+        totalBarangay,
+        totalStationRoute,
+        totalScheduleCount
     } = usePage<DashboardProps>().props;
 
     return (
@@ -59,6 +66,45 @@ const Dashboard = () => {
                 driverCount={driverCount}
                 residentCount={residentCount}
             />
+
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <div>
+                    <Title className="text-lg text-gray-600 font-semibold mb-2" title="Purok Count" />
+                    <Card className="border border-gray-200 bg-white">
+                        <CardContent className="flex items-center gap-3 p-3">
+                            <MapPin className="text-blue-500" size={30} />
+                            <div>
+                                <h4 className="text-md text-gray-500">Total</h4>
+                                <p className="text-3xl font-semibold text-gray-900">{totalBarangay}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div>
+                    <Title className="text-lg text-gray-600 font-semibold mb-2" title="Station Route Count" />
+                    <Card className="border border-gray-200 bg-white">
+                        <CardContent className="flex items-center gap-3 p-3">
+                            <Route className="text-green-500" size={30} />
+                            <div>
+                                <h4 className="text-md text-gray-500">Total</h4>
+                                <p className="text-3xl font-semibold text-gray-900">{totalStationRoute}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div>
+                    <Title className="text-lg text-gray-600 font-semibold mb-2" title="Schedule Route Count" />
+                    <Card className="border border-gray-200 bg-white">
+                        <CardContent className="flex items-center gap-3 p-3">
+                            <Calendar className="text-purple-500" size={30} />
+                            <div>
+                                <h4 className="text-md text-gray-500">Total</h4>
+                                <p className="text-3xl font-semibold text-gray-900">{totalScheduleCount}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
             <GarbageInfo
                 totalCollections={totalCollections}
                 totalOngoing={totalOngoing}

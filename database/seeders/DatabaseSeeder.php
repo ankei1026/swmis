@@ -22,32 +22,32 @@ class DatabaseSeeder extends Seeder
             'name' => 'Jane Doe',
             'email' => 'admin@test.com',
             'role' => 'admin',
-            'barangay' => 'Tabon',
+            'barangay' => 'Castillo Village, Purok 1',
             'phone_number' => '09123456789',
             'password' => Hash::make('12341234'),
         ]);
 
-        User::factory()->create([
-            'id' => 2,
-            'name' => 'Will Smith',
-            'email' => 'driver@test.com',
-            'role' => 'driver',
-            'barangay' => 'Tabon',
-            'phone_number' => '09123456789',
-            'password' => Hash::make('12341234'),
-        ]);
+        // User::factory()->create([
+        //     'id' => 2,
+        //     'name' => 'Will Smith',
+        //     'email' => 'driver@test.com',
+        //     'role' => 'driver',
+        //     'barangay' => 'Tabon',
+        //     'phone_number' => '09123456789',
+        //     'password' => Hash::make('12341234'),
+        // ]);
 
 
-        User::factory()->create([
-            'id' => 3,
-            'name' => 'Chris Blow',
-            'email' => 'resident@test.com',
-            'role' => 'resident',
-            'barangay' => 'Tabon',
-            'phone_number' => '09062377530',
-            'password' => Hash::make('12341234'),
-        ]);
+        // User::factory()->create([
+        //     'id' => 3,
+        //     'name' => 'Chris Blow',
+        //     'email' => 'resident@test.com',
+        //     'role' => 'resident',
+        //     'barangay' => 'Tabon',
+        //     'phone_number' => '09062377530',
+        //     'password' => Hash::make('12341234'),
+        // ]);
 
-        $this->call(BarangaySeeder::class);
+        // $this->call(BarangaySeeder::class);
     }
 }

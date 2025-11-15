@@ -1,11 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Head, usePage } from '@inertiajs/react';
-import Layout from '../Layout/LayoutResident'; // You'll need a Resident layout
+import Layout from '../Layout/LayoutResident';
 import Title from '../Components/Title';
 import GarbageInfo from '../Components/GarbageInfoDashboard';
 import WeeklyPerformance from '../Components/WeeklyPerformance';
 import MostSuccessfulCollection from '../Components/MostSuccessfulCollection';
-import { BarChart3, MapPin, Route, Calendar, User } from 'lucide-react';
+import { BarChart3, MapPin, Route, Calendar, User, AlertTriangle } from 'lucide-react';
 
 interface DashboardProps {
     totalCollections: number;
@@ -25,6 +25,7 @@ interface DashboardProps {
         name: string;
         email: string;
         role: string;
+        status: string;
     };
 }
 
@@ -42,17 +43,36 @@ const Dashboard = () => {
         user
     } = usePage<DashboardProps>().props;
 
+    const isNotVerified = user.status === 'not verified';
+
     return (
         <Layout>
-            <Head title="Resident Dashboard" />
+            <Head title="Dashboard" />
             <Title
-                subtitle={`Welcome back, ${user.name}!`}
-                title="Resident Dashboard"
+                title={`Welcome back, ${user.name}!`}
+                subtitle="Here's your dashboard overview"
             />
 
             <div className="flex flex-col gap-6">
+                {/* Only show notification if user is not verified */}
+                {isNotVerified && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                            <AlertTriangle className="text-yellow-600" size={24} />
+                            <div>
+                                <h3 className="font-semibold text-yellow-800">
+                                    Account Not Verified
+                                </h3>
+                                <p className="text-yellow-700 text-sm mt-1">
+                                    Please verify your account to submit complaints and receive SMS notifications.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* User Info Card */}
-                {/* <div className='grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4'>
+                <div className='grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4'>
                     <Card className="border">
                         <CardContent className="px-4 py-2">
                             <div className="flex items-center gap-4">
@@ -67,7 +87,8 @@ const Dashboard = () => {
                             </div>
                         </CardContent>
                     </Card>
-                </div> */}
+                </div>
+
                 <GarbageInfo
                     totalCollections={totalCollections}
                     totalSuccess={totalSuccess}
@@ -84,12 +105,6 @@ const Dashboard = () => {
                         mostSuccessfulRoute={mostSuccessfulRoute}
                         routeStations={routeStations}
                     />
-                </div>
-                <div className=''>
-                    <Title className="text-lg text-gray-600 font-semibold mb-2" title="Proper Segregation" />
-                    <div className='p-6 rounded-lg border shadow-md'>
-                        <img src="/assets/Propoer Segregation.jpg" alt="Uwu" />
-                    </div>
                 </div>
             </div>
         </Layout>

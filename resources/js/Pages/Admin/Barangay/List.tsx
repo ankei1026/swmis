@@ -1,4 +1,4 @@
-import Layout from '@/Pages/Layout/LayoutDriver';
+import Layout from '@/Pages/Layout/Layout';
 import Title from '@/Pages/Components/Title';
 import Map, { MapMarker, MANGAGOY_CENTER } from '@/Pages/Components/Map';
 import DataTable from '@/Pages/Components/Table';
@@ -7,11 +7,18 @@ import { router, PageProps, Head } from '@inertiajs/react';
 import { toast } from "sonner"
 import { route } from "ziggy-js";
 
+interface District {
+    id: number;
+    name: string;
+}
+
 interface Barangay {
     id: number;
     name: string;
     latitude: number;
     longitude: number;
+    district_id: number;
+    district: District; // Add district relationship
 }
 
 interface Props extends PageProps {
@@ -20,20 +27,20 @@ interface Props extends PageProps {
 
 const BarangayList = ({ barangays }: Props) => {
     const handleDelete = (id: number) => {
-        toast.warning('Are you sure you want to delete this barangay?', {
+        toast.warning('Are you sure you want to delete this Purok?', {
             action: {
                 label: 'Confirm',
                 onClick: () => {
-                    router.delete(route('driver.barangay.delete', id), {
+                    router.delete(route('admin.barangay.delete', id), {
                         preserveScroll: true,
-                        onStart: () => toast.loading('Deleting barangay...'),
+                        onStart: () => toast.loading('Deleting Purok...'),
                         onSuccess: () => {
                             toast.dismiss();
-                            toast.success('Barangay deleted successfully!');
+                            toast.success('Purok deleted successfully!');
                         },
                         onError: () => {
                             toast.dismiss();
-                            toast.error('Failed to delete barangay.');
+                            toast.error('Failed to delete Purok.');
                         },
                     });
                 },
@@ -42,10 +49,11 @@ const BarangayList = ({ barangays }: Props) => {
         });
     };
 
-    // Convert barangays to DataGrid rows
+    // Convert barangays to DataGrid rows - include district name
     const rows = barangays.map(barangay => ({
         id: barangay.id,
         name: barangay.name,
+        district: barangay.district?.name || 'N/A', // Access district name
         latitude: barangay.latitude,
         longitude: barangay.longitude,
     }));
@@ -58,10 +66,11 @@ const BarangayList = ({ barangays }: Props) => {
                 <div>
                     <strong>{b.name}</strong>
                     <br />
+                    <span className="text-gray-600">District: {b.district?.name || 'N/A'}</span>
                 </div>
                 <div className="flex gap-2 mt-2">
                     <button
-                        onClick={() => router.get(route('driver.barangay.edit', b.id))}
+                        onClick={() => router.get(route('admin.barangay.edit', b.id))}
                         className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
                     >
                         Edit
@@ -82,22 +91,22 @@ const BarangayList = ({ barangays }: Props) => {
 
     return (
         <Layout>
-            <Head title="Barangay List" />
-            <Title title="Barangay List" subtitle="View and manage barangays" />
+            <Head title="Purok List" />
+            <Title title="Purok List" subtitle="View and manage Puroks" />
 
             {/* Action Buttons */}
             <div className="mb-6 flex justify-between items-center">
                 <div className="text-sm text-gray-600">
-                    Total Barangays: {barangays.length}
+                    Total Puroks: {barangays.length}
                 </div>
                 <button
-                    onClick={() => router.get(route('driver.barangay.create'))}
+                    onClick={() => router.get(route('admin.barangay.create'))}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    Add New Barangay
+                    Add New Purok
                 </button>
             </div>
 
@@ -107,7 +116,7 @@ const BarangayList = ({ barangays }: Props) => {
                     <DataTable
                         columns={barangayColumns}
                         rows={rows}
-                        title="Barangays"
+                        title="Puroks"
                         pageSize={5}
                         checkboxSelection={false}
                     />
@@ -116,7 +125,7 @@ const BarangayList = ({ barangays }: Props) => {
 
             {/* Map View */}
             <div className="w-full bg-gray-100 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">Barangays Map View</h3>
+                <h3 className="text-lg font-semibold mb-4">Puroks Map View</h3>
                 <div className="flex w-full items-center justify-center">
                     <Map
                         center={MANGAGOY_CENTER}
@@ -134,17 +143,17 @@ const BarangayList = ({ barangays }: Props) => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <h3 className="mt-4 text-lg font-medium text-gray-900">No barangays</h3>
-                    <p className="mt-2 text-sm text-gray-500">Get started by creating your first barangay.</p>
+                    <h3 className="mt-4 text-lg font-medium text-gray-900">No Puroks</h3>
+                    <p className="mt-2 text-sm text-gray-500">Get started by creating your first purok.</p>
                     <div className="mt-6">
                         <button
-                            onClick={() => router.get(route('driver.barangay.create'))}
+                            onClick={() => router.get(route('admin.barangay.create'))}
                             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
-                            Add Barangay
+                            Add Purok
                         </button>
                     </div>
                 </div>

@@ -25,6 +25,14 @@ export const mainMenu = [
         ],
     },
     {
+        text: 'Barangay',
+        icon: <LocationEditIcon />,
+        children: [
+            { text: 'List', href: '/admin/barangays/list', icon: <ListIcon /> },
+            { text: 'Create', href: '/admin/barangays/create', icon: <GitPullRequestCreateIcon /> },
+        ],
+    },
+    {
         text: 'Station Routes',
         icon: <LandmarkIcon />,
         children: [
@@ -105,15 +113,6 @@ export const mainMenuDriver = [
         icon: <HomeIcon />,
         href: '/driver/dashboard',
     },
-    {
-        text: 'Barangay',
-        icon: <LocationEditIcon />,
-        children: [
-            { text: 'List', href: '/driver/barangays/list', icon: <ListIcon /> },
-            { text: 'Create', href: '/driver/barangays/create', icon: <GitPullRequestCreateIcon /> },
-        ],
-    },
-
 ];
 
 export const secondaryMenuDriver = [

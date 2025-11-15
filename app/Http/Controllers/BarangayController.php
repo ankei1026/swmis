@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barangay;
+use App\Models\District;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,15 +11,24 @@ class BarangayController extends Controller
 {
     public function createBarangay()
     {
-        return Inertia::render('Driver/Barangay/Create');
+        $districts = District::all();
+        return inertia(
+            'Admin/Barangay/Create',
+            [
+                'districts' => $districts
+            ]
+        );
     }
 
     public function listBarangay()
     {
-        $barangays = Barangay::all();
+        // Eager load the district relationship
+        $barangays = Barangay::with('district')->get();
+        $districts = District::all();
 
-        return Inertia::render('Driver/Barangay/List', [
+        return Inertia::render('Admin/Barangay/List', [
             'barangays' => $barangays,
+            'districts' => $districts
         ]);
     }
 
@@ -26,35 +36,41 @@ class BarangayController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
-
+            'district_id' => 'required|exists:districts,id',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
         ]);
 
         Barangay::create($validated);
 
-        return redirect()->route('driver.barangay.list')->with('success', 'Barangay created successfully!');
+        return redirect()->route('admin.barangay.list')->with('success', 'Purok created successfully.');
     }
 
-    public function edit($id)
+
+    public function edit($id) // Change parameter to accept ID
     {
-        $barangay = Barangay::findOrFail($id);
-        return Inertia::render('Driver/Barangay/Edit', ['barangay' => $barangay]);
+        // Eager load district for edit page and find by ID
+        $barangay = Barangay::with('district')->findOrFail($id);
+        $districts = District::all();
+
+        return inertia('Admin/Barangay/Edit', [ // Make sure this path matches your file structure
+            'barangay' => $barangay,
+            'districts' => $districts
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Barangay $barangay)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
-
+            'district_id' => 'required|exists:districts,id',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
         ]);
 
-        $barangay = Barangay::findOrFail($id);
         $barangay->update($validated);
 
-        return redirect()->route('driver.barangay.list')->with('success', 'Barangay updated successfully!');
+        return redirect()->route('admin.barangay.list')->with('success', 'Purok updated successfully.');
     }
 
     public function destroy($id)
@@ -62,6 +78,6 @@ class BarangayController extends Controller
         $barangay = Barangay::findOrFail($id);
         $barangay->delete();
 
-        return redirect()->route('driver.barangay.list')->with('success', 'Barangay deleted successfully!');
+        return redirect()->route('admin.barangay.list')->with('success', 'Purok deleted successfully!');
     }
 }

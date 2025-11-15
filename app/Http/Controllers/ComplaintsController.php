@@ -11,13 +11,14 @@ class ComplaintsController extends Controller
     public function index()
     {
         $complaints = Complaint::with('resident:id,name')
-            ->select('id', 'resident_id', 'photo', 'description', 'type', 'status', 'created_at')
+            ->select('id', 'resident_id', 'photo', 'description', 'barangay', 'type', 'status', 'created_at')
             ->orderByDesc('id')
             ->get()
             ->map(fn($c) => [
                 'id'         => $c->id,
                 'name'   => $c->resident->name,
                 'type'       => $c->type,
+                'barangay' => $c->barangay,
                 'description'    => $c->description,
                 'photo'      => $c->photo ? asset('storage/' . $c->photo) : null,
                 'timestamps'       => $c->created_at->format('m-d-Y'),
@@ -38,6 +39,7 @@ class ComplaintsController extends Controller
                 'id' => $complaint->id,
                 'resident' => $complaint->resident->name,
                 'type' => $complaint->type,
+                'barangay' => $complaint->barangay,
                 'description' => $complaint->description,
                 'status' => $complaint->status,
             ]

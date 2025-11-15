@@ -1,6 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { BarChart3, Globe, Leaf, Recycle, ShieldCheck, Users } from 'lucide-react';
+import { BarChart3, Globe, Leaf, LocationEditIcon, Recycle, ShieldCheck, Users } from 'lucide-react';
 import { useState } from 'react';
 import AuthModal from './Auth/AuthModal';
 
@@ -125,9 +125,9 @@ export default function LandingPage() {
                                     label: 'System Reliability',
                                 },
                                 {
-                                    icon: <Users className="text-green-600" />,
+                                    icon: <LocationEditIcon className="text-green-600" />,
                                     value: barangays.length,
-                                    label: 'Barangays Served',
+                                    label: 'Purok Served',
                                 },
                             ].map((stat, i) => (
                                 <motion.div

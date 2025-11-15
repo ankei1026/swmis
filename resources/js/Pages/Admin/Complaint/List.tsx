@@ -14,6 +14,7 @@ interface ComplaintRow {
     resident: string
     message: string
     photo: string
+    barangay: string
     date: string
     status: string
 }

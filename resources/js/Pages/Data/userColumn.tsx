@@ -46,7 +46,7 @@ const userColumns: GridColDef[] = [
     { field: 'name', headerName: 'Name', width: 150, flex: 1 },
     { field: 'email', headerName: 'Email', width: 200, flex: 1 },
     { field: 'phone', headerName: 'Phone Number', width: 160, flex: 1 },
-    { field: 'barangay', headerName: 'Barangay', width: 150, flex: 1 },
+    { field: 'barangay', headerName: 'Purok', width: 150, flex: 1 },
     {
         field: 'role',
         headerName: 'Role',

@@ -1,58 +1,65 @@
-import Layout from '@/Pages/Layout/LayoutDriver';
+import Layout from '@/Pages/Layout/Layout';
 import Title from '@/Pages/Components/Title';
 import FormInputField from '@/Pages/Components/FormInputField';
 import FormLabel from '@/Pages/Components/FormLabel';
 import FormInput from '@/Pages/Components/FormInput';
+import FormSelect from '@/Pages/Components/FormSelect'; // Add this import
 import Map, { MANGAGOY_CENTER } from '@/Pages/Components/Map';
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Button } from '@mui/material';
+
+interface District {
+    id: number;
+    name: string;
+}
 
 interface Barangay {
     id: number;
     name: string;
     latitude: number;
     longitude: number;
+    district_id: number;
+    district?: District;
 }
 
 interface Props {
     barangay: Barangay;
+    districts: District[]; // Add districts prop
 }
 
-const BarangayEdit = ({ barangay }: Props) => {
+const BarangayEdit = ({ barangay, districts }: Props) => {
     const { data, setData, put, processing, errors } = useForm({
         name: barangay.name || '',
-        latitude: barangay.latitude || '',
-        longitude: barangay.longitude || '',
+        latitude: barangay.latitude?.toString() || '',
+        longitude: barangay.longitude?.toString() || '',
+        district_id: barangay.district_id?.toString() || '', // Add district_id to form
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        put(route('driver.barangay.update', barangay.id), {
+        put(route('admin.barangay.update', barangay.id), {
             preserveScroll: true,
-            onStart: () => toast.loading('Updating barangay...'),
             onSuccess: () => {
-                toast.dismiss();
-                toast.success('Barangay updated successfully!');
+                toast.success('Purok updated successfully!');
             },
             onError: () => {
-                toast.dismiss();
-                toast.error('Failed to update barangay.');
+                toast.error('Failed to update purok.');
             },
         });
     };
 
     return (
         <Layout>
-            <Title title={`Edit Barangay - ${barangay.name}`} />
+            <Title title={`Edit Purok - ${barangay.name}`} />
 
             <div className="w-full bg-gray-100 p-6 rounded-lg">
                 <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
                     <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                             <FormInputField>
-                                <FormLabel htmlFor="name" textLabel="Barangay Name" />
+                                <FormLabel htmlFor="name" textLabel="Purok Name" />
                                 <FormInput
                                     className='w-full'
                                     id="name"
@@ -62,6 +69,25 @@ const BarangayEdit = ({ barangay }: Props) => {
                                     message={errors.name}
                                     required
                                 />
+                            </FormInputField>
+
+                            <FormInputField>
+                                <FormLabel htmlFor="district_id" textLabel="District" />
+                                <FormSelect
+                                    id="district_id"
+                                    value={data.district_id}
+                                    onChange={(e) => setData('district_id', e.target.value)}
+                                    message={errors.district_id}
+                                    required
+                                    className="w-full"
+                                >
+                                    <option value="">Select District</option>
+                                    {districts.map((district) => (
+                                        <option key={district.id} value={district.id}>
+                                            {district.name}
+                                        </option>
+                                    ))}
+                                </FormSelect>
                             </FormInputField>
 
                             <FormInputField>
@@ -93,8 +119,6 @@ const BarangayEdit = ({ barangay }: Props) => {
                             </FormInputField>
                         </div>
 
-
-
                         <p className="text-sm mb-4">Click the map to update the latitude and longitude:</p>
                         <div className="flex w-full items-center justify-center">
                             <Map
@@ -102,8 +126,8 @@ const BarangayEdit = ({ barangay }: Props) => {
                                 zoom={13}
                                 style={{ height: 400 }}
                                 onClick={({ lat, lng }) => {
-                                    setData('latitude', lat);
-                                    setData('longitude', lng);
+                                    setData('latitude', lat.toString());
+                                    setData('longitude', lng.toString());
                                 }}
                                 markers={[
                                     {
@@ -125,7 +149,7 @@ const BarangayEdit = ({ barangay }: Props) => {
                                 color='success'
                                 variant="contained"
                             >
-                                {processing ? 'Updating...' : 'Update Barangay'}
+                                {processing ? 'Updating...' : 'Update Purok'}
                             </Button>
                         </div>
                     </form>

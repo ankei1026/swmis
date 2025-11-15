@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Barangay;
 use App\Models\Schedule;
 use App\Models\ScheduleRoute;
 use App\Models\StationRoute;
@@ -36,6 +37,11 @@ class AdminController extends Controller
         $mostSuccessfulRoute = $this->getMostSuccessfulRoute($successCountsByRoute);
         $routeStations = $this->getRouteStationsWithOrder(array_keys($successCountsByRoute));
 
+        // Get additional counts for the dashboard cards
+        $totalBarangay = Barangay::count();
+        $totalStationRoute = StationRoute::count();
+        $totalScheduleRoute = ScheduleRoute::count();
+
         // Group by day and count success/failed
         $weeklyData = collect();
         foreach (range(0, 6) as $i) {
@@ -66,6 +72,11 @@ class AdminController extends Controller
             'successCountsByRoute' => $successCountsByRoute,
             'mostSuccessfulRoute' => $mostSuccessfulRoute,
             'routeStations' => $routeStations,
+
+            // Add the missing data for dashboard cards
+            'totalBarangay' => $totalBarangay,
+            'totalStationRoute' => $totalStationRoute,
+            'totalScheduleCount' => $totalScheduleRoute,
         ]);
     }
 

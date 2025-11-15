@@ -50,7 +50,7 @@ const Profile = () => {
                                 </div>
 
                                 <div className="flex justify-between py-3">
-                                    <span className="text-sm font-bold text-gray-600">Barangay</span>
+                                    <span className="text-sm font-bold text-gray-600">Purok</span>
                                     <span className="max-w-xs text-right text-sm text-gray-900">{user.barangay}</span>
                                 </div>
 
