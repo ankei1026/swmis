@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Barangay extends Model
 {
@@ -12,7 +13,13 @@ class Barangay extends Model
 
     protected $fillable = [
         'name',
+        'district_id',
         'latitude',
         'longitude',
     ];
+
+    public function district(): BelongsTo
+    {
+        return $this->belongsTo(District::class);
+    }
 }

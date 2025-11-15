@@ -11,15 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('barangays', function (Blueprint $table) {
+        Schema::create('districts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->double('latitude', 15, 10);
-            $table->double('longitude', 15, 10);
-
-            $table->unsignedBigInteger('district_id');
-            $table->foreign('district_id')->references('id')->on('districts')->onDelete('cascade');
-            
             $table->timestamps();
         });
     }
@@ -29,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('barangays');
+        Schema::dropIfExists('districts');
     }
 };
