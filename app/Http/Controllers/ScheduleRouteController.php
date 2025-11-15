@@ -15,7 +15,7 @@ class ScheduleRouteController extends Controller
         $stationroutes = StationRoute::all(['id', 'name', 'latitude', 'longitude']);
         $drivers = User::where('role', 'driver')->get(['id', 'name', 'email']);
 
-        return Inertia::render('Driver/ScheduleRoutes/Create', [
+        return Inertia::render('Admin/ScheduleRoutes/Create', [
             'stationroutes' => $stationroutes,
             'drivers' => $drivers,
         ]);
@@ -34,7 +34,7 @@ class ScheduleRouteController extends Controller
             $scheduleRoute->driver_name = $scheduleRoute->driver_name;
         });
 
-        return Inertia::render('Driver/ScheduleRoutes/List', [
+        return Inertia::render('Admin/ScheduleRoutes/List', [
             'scheduleroutes' => $scheduleroutes,
         ]);
     }
@@ -48,7 +48,7 @@ class ScheduleRouteController extends Controller
         // Load station routes for the map
         $scheduleRoute->station_routes = $scheduleRoute->stationRoutes();
 
-        return Inertia::render('Driver/ScheduleRoutes/Edit', [
+        return Inertia::render('Admin/ScheduleRoutes/Edit', [
             'scheduleRoute' => $scheduleRoute,
             'stationroutes' => $stationroutes,
             'drivers' => $drivers,
@@ -67,7 +67,7 @@ class ScheduleRouteController extends Controller
         // Use 'station_order' directly since that's what your model expects
         ScheduleRoute::create($validated);
 
-        return redirect()->route('driver.scheduleroute.list')->with('success', 'Route created successfully!');
+        return redirect()->route('admin.scheduleroute.list')->with('success', 'Route created successfully!');
     }
 
     public function update(Request $request, $id)
@@ -83,7 +83,7 @@ class ScheduleRouteController extends Controller
 
         $scheduleRoute->update($validated);
 
-        return redirect()->route('driver.scheduleroute.list')->with('success', 'Route updated successfully!');
+        return redirect()->route('admin.scheduleroute.list')->with('success', 'Route updated successfully!');
     }
 
     public function destroy($id)
@@ -91,6 +91,6 @@ class ScheduleRouteController extends Controller
         $scheduleRoute = ScheduleRoute::findOrFail($id);
         $scheduleRoute->delete();
 
-        return redirect()->route('driver.scheduleroute.list')->with('success', 'Route deleted successfully!');
+        return redirect()->route('admin.scheduleroute.list')->with('success', 'Route deleted successfully!');
     }
 }

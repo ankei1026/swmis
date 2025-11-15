@@ -78,6 +78,20 @@ Route::prefix('admin')
         Route::put('/user-verification/{id}', [UserVerificationController::class, 'update'])->name('admin.user-verification.update');
         Route::delete('/user-verification/{id}', [UserVerificationController::class, 'destroy'])->name('admin.user-verification.destroy');
 
+        Route::get('/stationroute/create', [StationRouteController::class, 'createStationRoute'])->name('admin.stationroute.create');
+        Route::get('/stationroute/list', [StationRouteController::class, 'listStationRoute'])->name('admin.stationroute.list');
+        Route::post('/stationroute/store', [StationRouteController::class, 'store'])->name('admin.stationroute.store');
+        Route::get('/stationroute/edit/{id}', [StationrouteController::class, 'edit'])->name('admin.stationroute.edit');
+        Route::put('/stationroute/update/{id}', [StationrouteController::class, 'update'])->name('admin.stationroute.update');
+        Route::delete('/stationroute/delete/{id}', [StationrouteController::class, 'destroy'])->name('admin.stationroute.delete');
+
+        Route::get('/scheduleroute/create', [ScheduleRouteController::class, 'createSchedulingRoute'])->name('admin.scheduleroute.create');
+        Route::get('/scheduleroute/list', [ScheduleRouteController::class, 'listSchedulingRoute'])->name('admin.scheduleroute.list');
+        Route::post('/scheduleroute/store', [ScheduleRouteController::class, 'store'])->name('admin.scheduleroute.store');
+        Route::get('/scheduleroute/edit/{id}', [ScheduleRouteController::class, 'editSchedulingRoute'])->name('admin.scheduleroute.edit');
+        Route::put('/scheduleroute/{id}', [ScheduleRouteController::class, 'update'])->name('admin.scheduleroute.update');
+        Route::delete('/scheduleroute/{id}', [ScheduleRouteController::class, 'destroy'])->name('admin.scheduleroute.destroy');
+
         Route::get('/complaints', [ComplaintsController::class, 'index'])->name('admin.complaints');
         Route::get('/complaints/{id}/edit', [ComplaintsController::class, 'edit'])->name('complaints.edit');
         Route::put('/complaints/{id}', [ComplaintsController::class, 'update'])->name('complaints.update');
@@ -124,20 +138,6 @@ Route::prefix('driver')
         Route::get('/barangays/edit/{id}', [BarangayController::class, 'edit'])->name('driver.barangay.edit');
         Route::put('/barangays/update/{id}', [BarangayController::class, 'update'])->name('driver.barangay.update');
         Route::delete('/barangays/delete/{id}', [BarangayController::class, 'destroy'])->name('driver.barangay.delete');
-
-        Route::get('/stationroute/create', [StationRouteController::class, 'createStationRoute'])->name('driver.stationroute.create');
-        Route::get('/stationroute/list', [StationRouteController::class, 'listStationRoute'])->name('driver.stationroute.list');
-        Route::post('/stationroute/store', [StationRouteController::class, 'store'])->name('driver.stationroute.store');
-        Route::get('/stationroute/edit/{id}', [StationrouteController::class, 'edit'])->name('driver.stationroute.edit');
-        Route::put('/stationroute/update/{id}', [StationrouteController::class, 'update'])->name('driver.stationroute.update');
-        Route::delete('/stationroute/delete/{id}', [StationrouteController::class, 'destroy'])->name('driver.stationroute.delete');
-
-        Route::get('/scheduleroute/create', [ScheduleRouteController::class, 'createSchedulingRoute'])->name('driver.scheduleroute.create');
-        Route::get('/scheduleroute/list', [ScheduleRouteController::class, 'listSchedulingRoute'])->name('driver.scheduleroute.list');
-        Route::post('/scheduleroute/store', [ScheduleRouteController::class, 'store'])->name('driver.scheduleroute.store');
-        Route::get('/scheduleroute/edit/{id}', [ScheduleRouteController::class, 'editSchedulingRoute'])->name('driver.scheduleroute.edit');
-        Route::put('/scheduleroute/{id}', [ScheduleRouteController::class, 'update'])->name('driver.scheduleroute.update');
-        Route::delete('/scheduleroute/{id}', [ScheduleRouteController::class, 'destroy'])->name('driver.scheduleroute.destroy');
 
         Route::get('/collectiontracker', [WasteTrackerDriverController::class, 'index'])->name('driver.collection-tracker');
         Route::post('/schedules/{schedule}/start', [WasteTrackerDriverController::class, 'startSchedule'])->name('driver.schedules.start');

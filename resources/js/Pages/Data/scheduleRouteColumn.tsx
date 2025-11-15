@@ -10,7 +10,8 @@ import { route } from 'ziggy-js';
 
 // ✅ Edit schedule route handler
 const handleEdit = (id: number) => {
-    router.visit(route('driver.scheduleroute.edit', id));
+    router.visit(route('admin.scheduleroute.edit', id));
+    toast.success('Navigated to edit schedule route page')
 };
 
 // ✅ Delete schedule route handler
@@ -19,7 +20,7 @@ const handleDelete = (id: number) => {
         action: {
             label: 'Confirm',
             onClick: () => {
-                router.delete(route('driver.scheduleroute.destroy', id), {
+                router.delete(route('admin.scheduleroute.destroy', id), {
                     preserveScroll: true,
                     onStart: () => toast.loading('Deleting schedule route...'),
                     onSuccess: () => {

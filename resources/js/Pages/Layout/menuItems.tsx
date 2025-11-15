@@ -24,6 +24,23 @@ export const mainMenu = [
             { text: 'Create', href: '/admin/scheduling/create', icon: <GitPullRequestCreateIcon /> },
         ],
     },
+     {
+        text: 'Station Routes',
+        icon: <LandmarkIcon />,
+        children: [
+            { text: 'List', href: '/admin/stationroute/list', icon: <ListIcon /> },
+            { text: 'Create', href: '/admin/stationroute/create', icon: <GitPullRequestCreateIcon /> },
+        ],
+    },
+
+    {
+        text: 'Schedule Routes',
+        icon: <RouteIcon />,
+        children: [
+            { text: 'List', href: '/admin/scheduleroute/list', icon: <ListIcon /> },
+            { text: 'Create', href: '/admin/scheduleroute/create', icon: <GitPullRequestCreateIcon /> },
+        ],
+    },
 ];
 
 export const secondaryMenu = [
@@ -86,24 +103,6 @@ export const mainMenuDriver = [
         children: [
             { text: 'List', href: '/driver/barangays/list', icon: <ListIcon /> },
             { text: 'Create', href: '/driver/barangays/create', icon: <GitPullRequestCreateIcon /> },
-        ],
-    },
-
-    {
-        text: 'Station Routes',
-        icon: <LandmarkIcon />,
-        children: [
-            { text: 'List', href: '/driver/stationroute/list', icon: <ListIcon /> },
-            { text: 'Create', href: '/driver/stationroute/create', icon: <GitPullRequestCreateIcon /> },
-        ],
-    },
-
-    {
-        text: 'Schedule Routes',
-        icon: <RouteIcon />,
-        children: [
-            { text: 'List', href: '/driver/scheduleroute/list', icon: <ListIcon /> },
-            { text: 'Create', href: '/driver/scheduleroute/create', icon: <GitPullRequestCreateIcon /> },
         ],
     },
 

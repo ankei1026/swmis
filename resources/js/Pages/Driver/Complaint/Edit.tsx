@@ -1,4 +1,4 @@
-import Layout from '@/Pages/Layout/Layout'
+import Layout from '@/Pages/Layout/LayoutDriver'
 import Title from '@/Pages/Components/Title'
 import { Head, useForm } from '@inertiajs/react'
 import { Button, MenuItem, Select, TextField } from '@mui/material'

@@ -1,4 +1,4 @@
-import Layout from '@/Pages/Layout/LayoutDriver';
+import Layout from '@/Pages/Layout/Layout';
 import Title from '@/Pages/Components/Title';
 import { usePage, useForm } from '@inertiajs/react';
 import { Button, MenuItem, Select, FormControl } from '@mui/material';
@@ -8,74 +8,34 @@ import { useState, useEffect } from 'react';
 import FormInputField from '@/Pages/Components/FormInputField';
 import FormLabel from '@/Pages/Components/FormLabel';
 import FormInput from '@/Pages/Components/FormInput';
-import RoutingMachine from '@/Pages/Components/RoutingMachine';
+import RoutingMachine from '@/Pages/Components/RoutingMachine'; // Adjust path as needed
 import L from 'leaflet';
 
-interface StationRoute {
-    id: number;
-    name: string;
-    latitude: number;
-    longitude: number;
-}
-
-interface Driver {
-    id: number;
-    name: string;
-    email: string;
-}
-
-interface ScheduleRoute {
-    id: number;
-    route_name: string;
-    station_order: number[];
-    driver_id: number;
-    driver?: Driver;
-    station_routes?: StationRoute[];
-}
-
-const ScheduleRouteEdit = () => {
+const ScheduleRouteCreate = () => {
     const { props }: any = usePage();
-    const scheduleRoute = props.scheduleRoute as ScheduleRoute;
-    const stationroutes = props.stationroutes as StationRoute[] || [];
-    const drivers = props.drivers as Driver[] || [];
+    const stationroutes = props.stationroutes || [];
+    const drivers = props.drivers || [];
 
-    const { data, setData, put, processing, errors } = useForm({
-        route_name: scheduleRoute?.route_name || '',
-        station_order: scheduleRoute?.station_order || [] as number[],
-        driver_id: scheduleRoute?.driver_id || '',
+    const { data, setData, post, processing, errors, reset } = useForm({
+        route_name: '',
+        station_order: [] as number[],
+        driver_id: '',
     });
 
     const [selected, setSelected] = useState<number[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    // Update form data when selected stations change
-    useEffect(() => {
-        setData('station_order', selected);
-    }, [selected]);
-
-    // Initialize form with existing data
-    useEffect(() => {
-        if (scheduleRoute) {
-            setData({
-                route_name: scheduleRoute.route_name,
-                station_order: scheduleRoute.station_order || [],
-                driver_id: scheduleRoute.driver_id,
-            });
-            setSelected(scheduleRoute.station_order || []);
-            setIsLoading(false);
-        }
-    }, [scheduleRoute]);
 
     const handleStationClick = (stationId: number) => {
         if (!selected.includes(stationId)) {
             const updated = [...selected, stationId];
             setSelected(updated);
+            setData('station_order', updated);
         }
     };
 
     const removeStation = (stationId: number) => {
         const updated = selected.filter(id => id !== stationId);
         setSelected(updated);
+        setData('station_order', updated);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -91,12 +51,14 @@ const ScheduleRouteEdit = () => {
             return;
         }
 
-        put(route('driver.scheduleroute.update', scheduleRoute.id), {
+        post(route('admin.scheduleroute.store'), {
             onSuccess: () => {
-                toast.success("Route updated successfully!");
+                toast.success("Route created successfully!");
+                reset();
+                setSelected([]);
             },
             onError: () => {
-                toast.error("Failed to update route");
+                toast.error("Failed to create route");
             }
         });
     };
@@ -112,36 +74,9 @@ const ScheduleRouteEdit = () => {
         return station ? L.latLng(station.latitude, station.longitude) : null;
     }).filter(Boolean) as L.LatLng[];
 
-    // Show loading state
-    if (isLoading) {
-        return (
-            <Layout>
-                <Title title="Edit Schedule Route" />
-                <div className="w-full bg-gray-100 p-6 rounded-lg">
-                    <div className="bg-white p-6 rounded-lg shadow-md text-center">
-                        <p className="text-gray-500">Loading route data...</p>
-                    </div>
-                </div>
-            </Layout>
-        );
-    }
-
-    if (!scheduleRoute) {
-        return (
-            <Layout>
-                <Title title="Edit Schedule Route" />
-                <div className="w-full bg-gray-100 p-6 rounded-lg">
-                    <div className="bg-white p-6 rounded-lg shadow-md text-center">
-                        <p className="text-red-500">Route not found.</p>
-                    </div>
-                </div>
-            </Layout>
-        );
-    }
-
     return (
         <Layout>
-            <Title title="Edit Schedule Route" />
+            <Title title="Create Schedule Route" />
 
             <div className="w-full bg-gray-100 p-6 rounded-lg">
                 <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
@@ -264,16 +199,7 @@ const ScheduleRouteEdit = () => {
                             </div>
                         </div>
 
-                        <div className="mt-4 flex justify-end space-x-3 gap-4">
-                            <Button
-                                type="button"
-                                variant="contained"
-                                color="primary"
-                                onClick={() => window.history.back()}
-                                disabled={processing}
-                            >
-                                Cancel
-                            </Button>
+                        <div className="mt-4 flex justify-end">
                             <Button
                                 type="submit"
                                 variant="contained"
@@ -281,7 +207,7 @@ const ScheduleRouteEdit = () => {
                                 disabled={processing}
                                 size="large"
                             >
-                                {processing ? 'Updating Route...' : 'Update Route'}
+                                {processing ? 'Creating Route...' : 'Create Route'}
                             </Button>
                         </div>
                     </form>
@@ -291,4 +217,4 @@ const ScheduleRouteEdit = () => {
     );
 };
 
-export default ScheduleRouteEdit;
+export default ScheduleRouteCreate;

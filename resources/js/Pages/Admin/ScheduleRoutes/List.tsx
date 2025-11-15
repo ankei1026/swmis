@@ -1,4 +1,4 @@
-import Layout from '@/Pages/Layout/LayoutDriver';
+import Layout from '@/Pages/Layout/Layout';
 import Title from '@/Pages/Components/Title';
 import Map, { MapMarker, MANGAGOY_CENTER } from '@/Pages/Components/Map';
 import DataTable from '@/Pages/Components/Table';

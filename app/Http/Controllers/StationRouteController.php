@@ -10,7 +10,7 @@ class StationRouteController extends Controller
 {
     public function createStationRoute()
     {
-        return inertia('Driver/StationRoutes/Create');
+        return inertia('Admin/StationRoutes/Create');
     }
 
     public function listStationRoute()
@@ -18,7 +18,7 @@ class StationRouteController extends Controller
         $stationroutes = StationRoute::all();
 
 
-        return Inertia::render('Driver/StationRoutes/List', [
+        return Inertia::render('Admin/StationRoutes/List', [
             'stationroutes' => $stationroutes,
         ]);
     }
@@ -34,12 +34,12 @@ class StationRouteController extends Controller
 
         StationRoute::create($validated);
 
-        return redirect()->route('driver.stationroute.list')->with('success', 'Station Route created successfully!');
+        return redirect()->route('admin.stationroute.list')->with('success', 'Station Route created successfully!');
     }
 
     public function edit($id){
         $stationroute = StationRoute::findOrFail($id);
-        return Inertia::render('Driver/StationRoutes/Edit', ['stationroute' => $stationroute]);
+        return Inertia::render('Admin/StationRoutes/Edit', ['stationroute' => $stationroute]);
     }
 
     public function update(Request $request, $id){
@@ -53,13 +53,13 @@ class StationRouteController extends Controller
         $stationroute = StationRoute::findOrFail($id);
         $stationroute->update($validated);
 
-        return redirect()->route('driver.stationroute.list')->with('success', 'Station Route updated successfully!');
+        return redirect()->route('admin.stationroute.list')->with('success', 'Station Route updated successfully!');
     }
 
     public function destroy($id){
         $stationroute = StationRoute::findOrFail($id);
         $stationroute->delete();
 
-        return redirect()->route('driver.stationroute.list')->with('success', 'Station Route deleted successfully!');
+        return redirect()->route('admin.stationroute.list')->with('success', 'Station Route deleted successfully!');
     }
 }

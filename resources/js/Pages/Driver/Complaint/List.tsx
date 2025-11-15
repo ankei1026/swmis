@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 import { useState } from 'react';
 import DataTable from '../../Components/Table';
 import { getComplaintColumns } from '../../Data/complaintColumn';
-import Layout from '../../Layout/Layout';
+import Layout from '../../Layout/LayoutDriver';
 import Title from '../../Components/Title';
 import { PageProps } from '@inertiajs/core'
 import { Head } from '@inertiajs/react';
