@@ -29,7 +29,7 @@ const StationRouteEdit = ({ stationroute }: Props) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
 
-        put(`/driver/stationroute/update/${stationroute.id}`, {
+        put(`/admin/stationroute/update/${stationroute.id}`, {
             onSuccess: () => {
                 toast.success('Station route updated successfully');
             },

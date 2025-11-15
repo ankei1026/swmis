@@ -17,14 +17,15 @@ export const mainMenu = [
         ],
     },
     {
-        text: 'Schedule',
-        icon: <Calendar1Icon />,
+        text: 'District',
+        icon: <User2Icon />,
         children: [
-            { text: 'List', href: '/admin/scheduling/list', icon: <ListIcon /> },
-            { text: 'Create', href: '/admin/scheduling/create', icon: <GitPullRequestCreateIcon /> },
+            { text: 'List', href: '/admin/district/list', icon: <ListIcon /> },
+            { text: 'Create', href: '/admin/district/create', icon: <GitPullRequestCreateIcon /> },
         ],
     },
-     {
+
+    {
         text: 'Station Routes',
         icon: <LandmarkIcon />,
         children: [
@@ -39,6 +40,14 @@ export const mainMenu = [
         children: [
             { text: 'List', href: '/admin/scheduleroute/list', icon: <ListIcon /> },
             { text: 'Create', href: '/admin/scheduleroute/create', icon: <GitPullRequestCreateIcon /> },
+        ],
+    },
+    {
+        text: 'Schedule',
+        icon: <Calendar1Icon />,
+        children: [
+            { text: 'List', href: '/admin/scheduling/list', icon: <ListIcon /> },
+            { text: 'Create', href: '/admin/scheduling/create', icon: <GitPullRequestCreateIcon /> },
         ],
     },
 ];

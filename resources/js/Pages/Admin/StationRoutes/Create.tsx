@@ -1,4 +1,4 @@
-import Layout from '@/Pages/Layout/LayoutDriver';
+import Layout from '@/Pages/Layout/Layout';
 import Title from '@/Pages/Components/Title';
 import Map from '@/Pages/Components/Map';
 import FormInputField from '@/Pages/Components/FormInputField';
@@ -18,7 +18,7 @@ const StationRouteCreate = () => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
 
-        post('/driver/stationroute/store', {
+        post('/admin/stationroute/store', {
             onSuccess: () => {
                 toast.success('Station created successfully');
                 reset();

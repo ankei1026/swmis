@@ -58,14 +58,14 @@ const formatDate = (dateString: string) => {
 
 // ✅ Schedule DataGrid column definitions
 const scheduleColumnsDriverResident: GridColDef[] = [
-    {
-        field: 'id',
-        headerName: 'ID',
-        width: 70,
-        align: 'center',
-        flex: 1,
-        headerAlign: 'center'
-    },
+    // {
+    //     field: 'id',
+    //     headerName: 'ID',
+    //     width: 70,
+    //     align: 'center',
+    //     flex: 1,
+    //     headerAlign: 'center'
+    // },
     {
         field: 'date',
         headerName: 'Date',

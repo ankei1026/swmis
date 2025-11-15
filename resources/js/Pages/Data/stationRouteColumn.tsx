@@ -9,7 +9,7 @@ import { route } from 'ziggy-js';
 
 // ✅ Edit station route handler
 const handleEdit = (id: number) => {
-    router.visit(route('driver.stationroute.edit', id));
+    router.visit(route('admin.stationroute.edit', id));
 };
 
 // ✅ Delete station route handler
@@ -18,7 +18,7 @@ const handleDelete = (id: number) => {
         action: {
             label: 'Confirm',
             onClick: () => {
-                router.delete(route('driver.stationroute.delete', id), {
+                router.delete(route('admin.stationroute.delete', id), {
                     preserveScroll: true,
                     onStart: () => toast.loading('Deleting station route...'),
                     onSuccess: () => {

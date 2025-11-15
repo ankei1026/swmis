@@ -90,14 +90,14 @@ const formatDate = (dateString: string) => {
 
 // ✅ Schedule DataGrid column definitions
 const scheduleColumns: GridColDef[] = [
-    {
-        field: 'id',
-        headerName: 'ID',
-        width: 70,
-        flex: 1,
-        align: 'center',
-        headerAlign: 'center'
-    },
+    // {
+    //     field: 'id',
+    //     headerName: 'ID',
+    //     width: 70,
+    //     flex: 1,
+    //     align: 'center',
+    //     headerAlign: 'center'
+    // },
     {
         field: 'date',
         headerName: 'Date',
