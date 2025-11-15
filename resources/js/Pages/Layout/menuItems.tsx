@@ -121,6 +121,11 @@ export const secondaryMenuDriver = [
         href: '/driver/collectiontracker',
     },
     {
+        text: 'Complaints',
+        icon: <InboxIcon />,
+        href: '/driver/complaints'
+    },
+    {
         text: 'Profile',
         icon: <User2Icon />,
         href: '/driver/profile',

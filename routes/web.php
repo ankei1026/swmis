@@ -4,6 +4,7 @@ use App\Http\Controllers\{
     AdminController,
     BarangayController,
     ComplaintsController,
+    DriverComplaintController,
     DriverController,
     DriverScheduleController,
     MonitoringController,
@@ -78,8 +79,8 @@ Route::prefix('admin')
         Route::delete('/user-verification/{id}', [UserVerificationController::class, 'destroy'])->name('admin.user-verification.destroy');
 
         Route::get('/complaints', [ComplaintsController::class, 'index'])->name('admin.complaints');
-        Route::get('/admin/complaints/{id}/edit', [ComplaintsController::class, 'edit'])->name('complaints.edit');
-        Route::put('/admin/complaints/{id}', [ComplaintsController::class, 'update'])->name('complaints.update');
+        Route::get('/complaints/{id}/edit', [ComplaintsController::class, 'edit'])->name('complaints.edit');
+        Route::put('/complaints/{id}', [ComplaintsController::class, 'update'])->name('complaints.update');
 
         Route::get('profile', [ResidentProfileController::class, 'adminProfile'])->name('admin.profile');
     });
@@ -147,6 +148,10 @@ Route::prefix('driver')
         Route::post('/schedules/{schedule}/abort', [WasteTrackerDriverController::class, 'abortSchedule'])->name('driver.schedules.abort');
 
         Route::get('/schedule', [DriverScheduleController::class, 'index'])->name('driver.schedule');
+
+        Route::get('/complaints', [DriverComplaintController::class, 'index'])->name('driver.complaints');
+        Route::get('/complaints/{id}/edit', [DriverComplaintController::class, 'edit'])->name('driver.complaints.edit');
+        Route::put('/complaints/{id}', [DriverComplaintController::class, 'update'])->name('driver.complaints.update');
 
         Route::get('/profile', [ResidentProfileController::class, 'driverProfile'])->name('driver.profile');
     });
