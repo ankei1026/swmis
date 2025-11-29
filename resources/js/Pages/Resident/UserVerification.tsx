@@ -204,7 +204,7 @@ const UserVerificationCreate = ({ verifications }: UserVerificationCreateProps) 
                             />
                             {errors.photo && <p className="mt-1 text-sm text-red-500">{errors.photo}</p>}
                             <p className="text-xs text-gray-500 mt-1">
-                                Accepted formats: JPG, PNG, PDF, DOC (Max: 5MB)
+                                Accepted formats: JPG, PNG, JPEG
                             </p>
                         </FormInputField>
 
@@ -212,10 +212,9 @@ const UserVerificationCreate = ({ verifications }: UserVerificationCreateProps) 
                         <div className="mb-4 p-4 bg-blue-50 rounded-md">
                             <h3 className="font-semibold text-blue-800 mb-2">Submission Guidelines:</h3>
                             <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
-                                <li>Ensure documents are clear and readable</li>
+                                <li>Ensure image are clear and readable</li>
                                 <li>File size should not exceed 5MB</li>
                                 <li>Submit one document type at a time</li>
-                                <li>You can submit all three required documents separately</li>
                                 <li>Admin will review your submission within 24-48 hours</li>
                             </ul>
                         </div>

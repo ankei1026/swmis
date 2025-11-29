@@ -6,15 +6,22 @@ use App\Models\Barangay;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\Complaint;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\ResidentComplaintNotification;
 
 class ResidentComplaintController extends Controller
 {
     public function index()
     {
         $barangays = Barangay::select('id', 'name')->get();
+
+        $complaints = Complaint::where('resident_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
         return Inertia::render('Resident/Complaint', [
             'barangays' => $barangays,
+            'complaints' => $complaints,
         ]);
     }
 
@@ -31,7 +38,7 @@ class ResidentComplaintController extends Controller
             ? $request->file('photo')->store('complaints', 'public')
             : null;
 
-        Complaint::create([
+        $complaint = Complaint::create([
             'resident_id' => Auth::id(),
             'type' => $validated['type'],
             'barangay' => $validated['barangay'],
@@ -39,6 +46,15 @@ class ResidentComplaintController extends Controller
             'description' => $validated['description'] ?? null,
             'status' => 'pending',
         ]);
+
+        // Load the resident relationship for the notification
+        $complaint->load('resident');
+
+        // Notify all admin users
+        $adminUsers = User::where('role', 'admin')->get();
+        foreach ($adminUsers as $admin) {
+            $admin->notify(new ResidentComplaintNotification($complaint));
+        }
 
         return back()->with('success', 'Complaint submitted successfully!');
     }

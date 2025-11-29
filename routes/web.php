@@ -9,6 +9,7 @@ use App\Http\Controllers\{
     DriverController,
     DriverScheduleController,
     MonitoringController,
+    NotificationController, // Add this line
     RegisterController,
     ResidentComplaintController,
     ResidentController,
@@ -43,6 +44,15 @@ Route::prefix('auth')->group(function () {
 
     Route::get('/register', [RegisterController::class, 'index']);
     Route::post('/register', [RegisterController::class, 'store'])->name('register');
+});
+
+// ======================
+// NOTIFICATION ROUTES (Available for all authenticated users)
+// ======================
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::get('/notifications/count', [NotificationController::class, 'getUnreadCount'])->name('notifications.count');
 });
 
 // ======================

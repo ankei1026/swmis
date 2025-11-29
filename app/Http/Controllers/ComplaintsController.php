@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Complaint;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Notifications\ComplaintStatusUpdateNotification;
 
 class ComplaintsController extends Controller
 {
@@ -52,10 +53,16 @@ class ComplaintsController extends Controller
             'status' => 'required|in:pending,resolve'
         ]);
 
-        $complaint = Complaint::findOrFail($id);
+        $complaint = Complaint::with('resident')->findOrFail($id);
+        $oldStatus = $complaint->status;
         $complaint->update([
             'status' => $request->status,
         ]);
+
+        // Notify the resident if status changed
+        if ($oldStatus !== $request->status) {
+            $complaint->resident->notify(new ComplaintStatusUpdateNotification($complaint));
+        }
 
         return redirect()->route('admin.complaints')->with('success', 'Complaint updated');
     }
