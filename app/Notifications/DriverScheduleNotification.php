@@ -6,17 +6,19 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Carbon;
 
 class DriverScheduleNotification extends Notification
 {
     use Queueable;
 
+    protected $schedule;
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct($schedule)
     {
-        //
+        $this->schedule = $schedule;
     }
 
     /**
@@ -26,18 +28,24 @@ class DriverScheduleNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database'];
     }
 
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toDatabase($notifiable)
     {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+        $formattedDate = Carbon::parse($this->schedule->date)->format('M j, Y');
+        $formattedTime = Carbon::parse($this->schedule->time)->format('h:i A');
+
+        return [
+            'schedule_id' => $this->schedule->id,
+            'title' => 'Schedule Assigned',
+            'message' => "A new schedule has been assigned to you on {$formattedDate} at {$formattedTime} for the {$this->schedule->route} route.",
+            'type' => 'schedule_assigned',
+            'url' => route('driver.collection-tracker')
+        ];
     }
 
     /**

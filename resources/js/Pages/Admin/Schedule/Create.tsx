@@ -39,8 +39,6 @@ interface PageProps {
     };
 }
 
-
-
 const SchedulingCreate = () => {
     const { scheduleRoutes, flash } = usePage<PageProps>().props;
 
@@ -68,7 +66,7 @@ const SchedulingCreate = () => {
         e.preventDefault();
         post(route('admin.scheduling.store'), {
             onSuccess: () => {
-                // The success toast will be handled by the flash message useEffect
+                toast.success('Schedule created successfully!');
             },
             onError: () => {
                 toast.error('Failed to create schedule. Please check the form for errors.');

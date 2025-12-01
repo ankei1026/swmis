@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Schedule;
 use App\Models\ScheduleRoute;
 use App\Models\User;
+use App\Notifications\DriverScheduleNotification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -85,19 +86,28 @@ class SchedulingController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($validated) {
-                // Get the schedule route to access the driver_id
+            $schedule = null; // <-- declare it here
+
+            DB::transaction(function () use ($validated, &$schedule) {
+                // Get the schedule route
                 $scheduleRoute = ScheduleRoute::findOrFail($validated['schedule_route_id']);
 
-                Schedule::create([
+                // Create the schedule
+                $schedule = Schedule::create([
                     'date' => $validated['date'],
                     'time' => $validated['time'],
                     'schedule_route_id' => $validated['schedule_route_id'],
-                    'driver_id' => $scheduleRoute->driver_id, // Use the driver from the route
+                    'driver_id' => $scheduleRoute->driver_id,
                     'status' => $validated['status'],
                     'type' => $validated['type'],
                 ]);
             });
+
+            // Now $schedule is usable here
+            $driverUsers = User::where('role', 'driver')->get();
+            foreach ($driverUsers as $driver) {
+                $driver->notify(new DriverScheduleNotification($schedule));
+            }
 
             return redirect()->route('admin.scheduling.list')
                 ->with('success', 'Schedule created successfully!');
@@ -106,6 +116,7 @@ class SchedulingController extends Controller
                 ->with('error', 'Failed to create schedule: ' . $e->getMessage());
         }
     }
+
 
     // Add the missing edit method
     public function edit(Schedule $schedule)
@@ -144,7 +155,7 @@ class SchedulingController extends Controller
             'type' => $schedule->type,
             'route_name' => $schedule->scheduleRoute->route_name ?? 'No Route',
             'driver_name' => $schedule->driver->name ?? 'No Driver',
-            'station_routes' => $schedule->scheduleRoute ? 
+            'station_routes' => $schedule->scheduleRoute ?
                 collect($schedule->scheduleRoute->station_routes)->map(function ($station) {
                     return [
                         'id' => $station->id,
