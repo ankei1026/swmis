@@ -1,13 +1,20 @@
 import Layout from '@/Pages/Layout/Layout';
 import Title from '@/Pages/Components/Title';
 import DataTable from '@/Pages/Components/Table';
-import scheduleColumns from '@/Pages/Data/schedulingColumn';
 import { router, PageProps, Head } from '@inertiajs/react';
 import { toast } from "sonner"
 import { route } from "ziggy-js";
 import Map, { MapMarker, MANGAGOY_CENTER } from '@/Pages/Components/Map';
 import RoutingMachine from '@/Pages/Components/RoutingMachine';
 import { useState, useMemo } from 'react';
+
+// Import MUI components for columns
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import { GridColDef } from '@mui/x-data-grid';
 
 interface StationRoute {
     id: number;
@@ -32,6 +39,182 @@ interface Props extends PageProps {
     schedules: Schedule[];
 }
 
+// ✅ Get status color
+const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+        case 'pending':
+            return 'primary';
+        case 'success':
+            return 'success';
+        case 'ongoing':
+            return 'warning';
+        case 'failed':
+            return 'error';
+        default:
+            return 'default';
+    }
+};
+
+// ✅ Get type color
+const getTypeColor = (type: string) => {
+    if (type.includes('Biodegradable')) {
+        return 'success';
+    } else if (type.includes('Non-Biodegradable')) {
+        return 'primary';
+    }
+    return 'default';
+};
+
+// ✅ Format time for display
+const formatTime = (time: string) => {
+    if (!time) return '';
+
+    // If time is in 24-hour format, convert to 12-hour format
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const formattedHour = hour % 12 || 12;
+
+    return `${formattedHour}:${minutes} ${ampm}`;
+};
+
+// ✅ Format date for display
+const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+};
+
+// Function to generate columns with delete handler
+const getScheduleColumns = (onDelete: (id: number) => void): GridColDef[] => {
+    return [
+        {
+            field: 'date',
+            headerName: 'Date',
+            width: 120,
+            flex: 1,
+            renderCell: (params) => (
+                <div className="text-sm font-medium text-gray-700">
+                    {formatDate(params.value)}
+                </div>
+            ),
+        },
+        {
+            field: 'time',
+            headerName: 'Time',
+            width: 100,
+            flex: 1,
+            renderCell: (params) => (
+                <div className="text-sm text-gray-600">
+                    {formatTime(params.value)}
+                </div>
+            ),
+        },
+        {
+            field: 'route_name',
+            headerName: 'Route',
+            width: 180,
+            flex: 1,
+            renderCell: (params) => (
+                <div className="text-sm font-medium text-gray-700">
+                    {params.value}
+                </div>
+            ),
+        },
+        {
+            field: 'driver_name',
+            headerName: 'Driver',
+            width: 150,
+            flex: 1,
+            renderCell: (params) => (
+                <div className="text-sm font-medium text-gray-700">
+                    {params.value}
+                </div>
+            ),
+        },
+        {
+            field: 'type',
+            headerName: 'Type',
+            width: 180,
+            flex: 1,
+            renderCell: (params) => (
+                <Chip
+                    label={params.value}
+                    size="small"
+                    color={getTypeColor(params.value) as any}
+                    variant="outlined"
+                />
+            ),
+        },
+        {
+            field: 'status',
+            headerName: 'Status',
+            headerAlign: 'center',
+            align: 'center',
+            width: 120,
+            flex: 1,
+            renderCell: (params) => (
+                <Chip
+                    label={params.value.charAt(0).toUpperCase() + params.value.slice(1)}
+                    size="small"
+                    color={getStatusColor(params.value) as any}
+                    variant="filled"
+                />
+            ),
+        },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 120,
+            align: 'center',
+            headerAlign: 'center',
+            flex: 1,
+            sortable: false,
+            filterable: false,
+            disableColumnMenu: true,
+            renderCell: (params) => (
+                <div className="flex justify-center items-center gap-1 h-full">
+                    <Tooltip title="Edit Schedule">
+                        <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                router.visit(route('admin.scheduling.edit', params.row.id));
+                            }}
+                            sx={{
+                                '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
+                            }}
+                        >
+                            <EditIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete Schedule">
+                        <IconButton
+                            size="small"
+                            color="error"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(params.row.id);
+                            }}
+                            sx={{
+                                '&:hover': { backgroundColor: 'rgba(211, 47, 47, 0.04)' }
+                            }}
+                        >
+                            <DeleteIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                </div>
+            ),
+        },
+    ];
+};
+
 const ScheduleList = ({ schedules }: Props) => {
     const [selectedScheduleIds, setSelectedScheduleIds] = useState<number[]>([]);
 
@@ -40,7 +223,8 @@ const ScheduleList = ({ schedules }: Props) => {
             action: {
                 label: 'Confirm',
                 onClick: () => {
-                    router.delete(route('admin.schedules.destroy', id), {
+                    console.log('Deleting schedule with ID:', id);
+                    router.delete(route('admin.scheduling.destroy', id), {
                         preserveScroll: true,
                         onStart: () => toast.loading('Deleting schedule...'),
                         onSuccess: () => {
@@ -86,20 +270,7 @@ const ScheduleList = ({ schedules }: Props) => {
         return schedules.filter(schedule => selectedScheduleIds.includes(schedule.id));
     }, [schedules, selectedScheduleIds]);
 
-    const rows = [...schedules]; // This might work if the structure is already correct
-
-    // Or if that doesn't work, try this:
-    // const rows = schedules.map(schedule => ({
-    //     ...schedule, // Spread all properties
-    //     // Ensure all required fields are present
-    //     id: schedule.id,
-    //     date: schedule.date,
-    //     time: schedule.time,
-    //     route_name: schedule.route_name,
-    //     driver_name: schedule.driver_name,
-    //     type: schedule.type,
-    //     status: schedule.status,
-    // }));
+    const rows = [...schedules]; // Use the schedules directly
 
     // Create markers for filtered schedules only
     const allStations = useMemo(() =>
@@ -204,7 +375,7 @@ const ScheduleList = ({ schedules }: Props) => {
             <div className='w-full bg-gray-100 mb-6 rounded-lg'>
                 <div className='py-4'>
                     <DataTable
-                        columns={scheduleColumns}
+                        columns={getScheduleColumns(handleDelete)} // Pass the handler here
                         rows={rows}
                         title="Collection Schedules"
                         pageSize={10}

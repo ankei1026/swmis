@@ -1,6 +1,7 @@
 import Layout from '@/Pages/Layout/Layout';
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import Map from '../Components/Map';
 import Title from '../Components/Title';
 
@@ -134,6 +135,21 @@ const getStatusColor = (status: string) => {
     return colors[status as keyof typeof colors] || '#6B7280';
 };
 
+// Format schedule date to 'December 12, 2025' format
+const formatScheduleDate = (dateString: string | null): string => {
+    if (!dateString) return '';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    } catch (e) {
+        return dateString || '';
+    }
+};
+
 const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
     const [schedules, setSchedules] = useState<Schedule[]>(activeSchedules);
     const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
@@ -145,7 +161,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
         if (schedules.length > 0) {
             // Try to get the last selected schedule from localStorage
             const savedScheduleId = localStorage.getItem('monitoringSelectedScheduleId');
-            
+
             if (savedScheduleId) {
                 const savedSchedule = schedules.find(s => s.id === parseInt(savedScheduleId));
                 if (savedSchedule) {
@@ -153,7 +169,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                     return;
                 }
             }
-            
+
             // If no saved schedule or saved schedule not found, use the first one
             setSelectedSchedule(schedules[0]);
         }
@@ -182,7 +198,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                 .then(data => {
                     setSchedules(data.schedules);
                     setLastUpdate(data.last_updated);
-                    
+
                     // Update selected schedule if it exists in the new data
                     if (selectedSchedule) {
                         const updatedSelectedSchedule = data.schedules.find((s: Schedule) => s.id === selectedSchedule.id);
@@ -202,15 +218,15 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
         if (!schedule.stations) return null;
 
         const stations = schedule.stations.sort((a, b) => a.order - b.order);
-        
+
         // First, look for stations that are actively being worked on
         const collectingStation = stations.find(station => station.status === 'collecting');
         const arrivedStation = stations.find(station => station.status === 'arrived');
-        
+
         // If we're actively collecting or arrived at a station, that's the current one
         if (collectingStation) return collectingStation;
         if (arrivedStation) return arrivedStation;
-        
+
         // If no active station, find the first pending station
         const pendingStations = stations.filter(station => station.status === 'pending');
         if (pendingStations.length > 0) return pendingStations[0];
@@ -324,7 +340,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
             .then(data => {
                 setSchedules(data.schedules);
                 setLastUpdate(data.last_updated);
-                
+
                 // Update selected schedule if it exists in the new data
                 if (selectedSchedule) {
                     const updatedSelectedSchedule = data.schedules.find((s: Schedule) => s.id === selectedSchedule.id);
@@ -335,6 +351,80 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
             })
             .catch(error => console.error('Failed to fetch updates:', error));
     };
+
+    // Real-time listeners via Laravel Echo (reverb)
+    useEffect(() => {
+        const echo = (window as any).Echo;
+        if (!echo || !drivers || drivers.length === 0) return;
+
+        const subscriptions: Array<any> = [];
+
+        drivers.forEach(driver => {
+            try {
+                const channel = echo.channel(`driver.${driver.id}`);
+
+                const handleStationUpdate = (payload: any) => {
+                    if (!payload || !payload.schedule_id || !payload.station) return;
+
+                    setSchedules(prev => prev.map(s => {
+                        if (s.id !== payload.schedule_id) return s;
+                        const updatedStations = s.stations.map(st => st.id === payload.station.id ? { ...st, ...payload.station } : st);
+                        return { ...s, stations: updatedStations, last_updated: new Date().toISOString() };
+                    }));
+
+                    if (selectedSchedule && selectedSchedule.id === payload.schedule_id) {
+                        setSelectedSchedule(prev => prev ? { ...prev, stations: prev.stations.map(st => st.id === payload.station.id ? { ...st, ...payload.station } : st) } : prev);
+                    }
+                };
+
+                const handleScheduleUpdate = (payload: any) => {
+                    if (!payload || !payload.id) return;
+
+                    // Show toast if schedule is completed
+                    if (payload.status === 'success' || payload.status === 'completed') {
+                        toast.success(`Driver completed route: ${payload.route_name}`);
+                    }
+
+                    setSchedules(prev => {
+                        const exists = prev.some(s => s.id === payload.id);
+                        if (exists) {
+                            return prev.map(s => s.id === payload.id ? { ...s, ...payload, last_updated: new Date().toISOString() } : s);
+                        }
+
+                        // If new schedule (not in list) add it to the front
+                        return [{ ...payload, last_updated: new Date().toISOString() }, ...prev];
+                    });
+
+                    if (selectedSchedule && selectedSchedule.id === payload.id) {
+                        setSelectedSchedule(payload);
+                    }
+                };
+
+                channel.listen('station.updated', handleStationUpdate);
+                channel.listen('.station.updated', handleStationUpdate);
+                channel.listen('schedule.updated', handleScheduleUpdate);
+                channel.listen('.schedule.updated', handleScheduleUpdate);
+
+                subscriptions.push({ channel, handleStationUpdate, handleScheduleUpdate });
+            } catch (err) {
+                console.error('Echo subscribe error for driver', driver.id, err);
+            }
+        });
+
+        return () => {
+            subscriptions.forEach(({ channel, handleStationUpdate, handleScheduleUpdate }) => {
+                try {
+                    channel.stopListening('station.updated', handleStationUpdate);
+                    channel.stopListening('.station.updated', handleStationUpdate);
+                    channel.stopListening('schedule.updated', handleScheduleUpdate);
+                    channel.stopListening('.schedule.updated', handleScheduleUpdate);
+                    channel.unsubscribe();
+                } catch (e) {
+                    // ignore cleanup errors
+                }
+            });
+        };
+    }, [drivers, selectedSchedule]);
 
     return (
         <Layout>
@@ -372,51 +462,53 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
 
                                 {/* Selected Schedule Overview */}
                                 {selectedSchedule && (
-                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100">
-                                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                                            <div className="flex-1">
-                                                <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedSchedule.route_name}</h3>
-                                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span>👨‍💼</span>
-                                                        <span>{selectedSchedule.driver_name}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span>📍</span>
-                                                        <span>{selectedSchedule.stations.length} Stations</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span>🕒</span>
-                                                        <span>Started: {selectedSchedule.started_at ? new Date(selectedSchedule.started_at).toLocaleTimeString() : 'Not started'}</span>
-                                                    </div>
-                                                    {getCurrentActiveStation(selectedSchedule) && (
-                                                        <div className="flex items-center gap-1.5 text-blue-600 font-medium">
-                                                            <TruckIcon size={24} />
-                                                            <span>Current: {getCurrentActiveStation(selectedSchedule)?.name}</span>
+                                    <>
+                                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100 mb-6">
+                                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                                <div className="flex-1">
+                                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedSchedule.route_name}</h3>
+                                                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span>👨‍💼</span>
+                                                            <span>{selectedSchedule.driver_name}</span>
                                                         </div>
-                                                    )}
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span>📍</span>
+                                                            <span>{selectedSchedule.stations.length} Stations</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span>🕒</span>
+                                                            <span>Started: {selectedSchedule.started_at ? formatScheduleDate(selectedSchedule.started_at) : 'Not started'}</span>
+                                                        </div>
+                                                        {getCurrentActiveStation(selectedSchedule) && (
+                                                            <div className="flex items-center gap-1.5 text-blue-600 font-medium">
+                                                                <TruckIcon size={24} />
+                                                                <span>Current: {getCurrentActiveStation(selectedSchedule)?.name}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <StatusBadge status={selectedSchedule.status} />
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-2">
-                                                <StatusBadge status={selectedSchedule.status} />
+                                            {/* Progress Section */}
+                                            <div className="mt-4">
+                                                <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                                                    <span>Route Progress</span>
+                                                    <span>{selectedSchedule.progress_percentage}% Complete</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-3">
+                                                    <div
+                                                        className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500 ease-out shadow-sm"
+                                                        style={{ width: `${selectedSchedule.progress_percentage}%` }}
+                                                    ></div>
+                                                </div>
                                             </div>
                                         </div>
-
-                                        {/* Progress Section */}
-                                        <div className="mt-4">
-                                            <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
-                                                <span>Route Progress</span>
-                                                <span>{selectedSchedule.progress_percentage}% Complete</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-3">
-                                                <div
-                                                    className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500 ease-out shadow-sm"
-                                                    style={{ width: `${selectedSchedule.progress_percentage}%` }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </>
                                 )}
                             </div>
 
@@ -468,8 +560,8 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                                 <div
                                                     key={schedule.id}
                                                     className={`p-4 rounded-lg border-l-4 cursor-pointer transition-all duration-200 ${selectedSchedule?.id === schedule.id
-                                                            ? 'bg-blue-50 border-blue-500 shadow-md'
-                                                            : 'bg-white border-gray-200 hover:bg-gray-50 hover:shadow-sm'
+                                                        ? 'bg-blue-50 border-blue-500 shadow-md'
+                                                        : 'bg-white border-gray-200 hover:bg-gray-50 hover:shadow-sm'
                                                         }`}
                                                     onClick={() => handleScheduleChange(schedule)}
                                                 >
@@ -514,7 +606,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                                         </div>
                                                         {schedule.started_at && (
                                                             <div className="text-gray-500">
-                                                                🕒 Started: {new Date(schedule.started_at).toLocaleTimeString()}
+                                                                🕒 Started: {formatScheduleDate(schedule.started_at)}
                                                             </div>
                                                         )}
                                                         <div className="text-gray-400">
@@ -535,6 +627,81 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                 </div>
                             </div>
 
+                            {/* Station Progress List (read-only) */}
+                            {selectedSchedule && (
+                                <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
+                                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                        <span>📍</span>
+                                        Station Progress
+                                    </h3>
+                                    <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                                        {selectedSchedule.stations
+                                            .sort((a, b) => a.order - b.order)
+                                            .map((station) => {
+                                                const borderColor = getStatusColor(station.status);
+                                                const isCurrentActive = getCurrentActiveStation(selectedSchedule)?.id === station.id;
+                                                const isStationLast = station.order === Math.max(...selectedSchedule.stations.map(s => s.order));
+                                                return (
+                                                    <div
+                                                        key={station.id}
+                                                        className={`bg-white p-4 rounded-lg border-l-4 shadow-sm flex items-start gap-3 ${isCurrentActive ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}
+                                                        style={{ borderLeftColor: borderColor }}
+                                                    >
+                                                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border mt-0.5 relative ${isCurrentActive
+                                                            ? 'bg-blue-100 text-blue-700 border-blue-300'
+                                                            : 'bg-gray-100 text-gray-700 border-gray-300'
+                                                            }`}>
+                                                            {station.order + 1}
+                                                            {isCurrentActive && (
+                                                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-ping"></div>
+                                                            )}
+                                                            {isStationLast && (
+                                                                <div className="absolute -bottom-1 -right-1 text-xs">🏁</div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <h4 className="font-semibold text-gray-900 text-sm leading-tight">
+                                                                    {station.name}
+                                                                </h4>
+                                                                {isCurrentActive && (
+                                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                        <TruckIcon size={10} />
+                                                                        {isStationLast ? 'Final' : 'Current'}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="mb-2">
+                                                                <StatusBadge status={station.status} />
+                                                            </div>
+
+                                                            <div className="space-y-1 text-xs text-gray-500">
+                                                                {station.arrived_at && (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span>🟢</span>
+                                                                        <span>Arrived: {new Date(station.arrived_at).toLocaleTimeString()}</span>
+                                                                    </div>
+                                                                )}
+                                                                {station.completed_at && (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span>✅</span>
+                                                                        <span>Completed: {new Date(station.completed_at).toLocaleTimeString()}</span>
+                                                                    </div>
+                                                                )}
+                                                                {station.departed_at && (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span>🚗</span>
+                                                                        <span>Departed: {new Date(station.departed_at).toLocaleTimeString()}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                            )}
                             {/* Recently Completed Card */}
                             {schedules.filter(s => s.status === 'completed').length > 0 && (
                                 <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -553,8 +720,8 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                                         <div className="text-xs text-gray-600 truncate">{schedule.route_name}</div>
                                                     </div>
                                                     <div className="text-xs text-gray-500 whitespace-nowrap">
-                                                        {schedule.completed_at ? new Date(schedule.completed_at).toLocaleTimeString() : 'N/A'}
-                                                    </div>
+                                                                {schedule.completed_at ? formatScheduleDate(schedule.completed_at) : 'N/A'}
+                                                            </div>
                                                 </div>
                                             ))}
                                         </div>

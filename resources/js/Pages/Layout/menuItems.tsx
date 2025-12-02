@@ -1,6 +1,6 @@
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import { hr } from 'date-fns/locale';
-import { BellIcon, BuildingIcon, Calendar1Icon, CheckIcon, EyeIcon, GitPullRequestCreateIcon, HomeIcon, LandmarkIcon, ListIcon, LocationEditIcon, RouteIcon, User2Icon, UserIcon } from 'lucide-react';
+import { BellIcon, BuildingIcon, Calendar1Icon, CheckIcon, EyeIcon, GitPullRequestCreateIcon, HomeIcon, LandmarkIcon, ListIcon, LocationEditIcon, RouteIcon, TrashIcon, User2Icon, UserIcon } from 'lucide-react';
 
 export const mainMenu = [
     {
@@ -80,6 +80,11 @@ export const mainMenuResident = [
 
 export const secondaryMenuResident = [
 
+    {
+        text: 'Proper Segregation',
+        icon: <TrashIcon />,
+        href: '/resident/proper-segregation',
+    },
     {
         text: 'Complaint',
         icon: <InboxIcon />,

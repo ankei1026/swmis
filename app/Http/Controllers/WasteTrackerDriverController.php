@@ -8,6 +8,8 @@ use App\Models\Schedule;
 use App\Models\ScheduleStationLog;
 use App\Models\StationRoute;
 use Illuminate\Support\Facades\Auth;
+use App\Events\StationStatusUpdated;
+use App\Events\ScheduleStatusUpdated;
 
 class WasteTrackerDriverController extends Controller
 {
@@ -84,6 +86,9 @@ class WasteTrackerDriverController extends Controller
             'started_at' => now(),
         ]);
 
+        // Broadcast schedule started to listeners
+        event(new ScheduleStatusUpdated($schedule));
+
         return redirect()->route('driver.collection-tracker');
     }
 
@@ -140,6 +145,10 @@ class WasteTrackerDriverController extends Controller
         // Check if all stations are completed
         $this->checkScheduleCompletion($schedule);
 
+        // Broadcast station update and schedule update for real-time viewers
+        event(new StationStatusUpdated($schedule->id, $station, $schedule->driver_id));
+        event(new ScheduleStatusUpdated($schedule));
+
         return redirect()->route('driver.collection-tracker');
     }
 
@@ -156,6 +165,9 @@ class WasteTrackerDriverController extends Controller
             'status' => 'success', // Changed from 'completed' to 'success'
             'completed_at' => now(),
         ]);
+
+        // Broadcast schedule completion
+        event(new ScheduleStatusUpdated($schedule));
 
         return back()->with('success', 'Schedule completed successfully.');
     }
@@ -180,6 +192,9 @@ class WasteTrackerDriverController extends Controller
             'notes' => $request->notes ?? "Schedule aborted: " . $request->reason,
         ]);
 
+        // Broadcast schedule abort
+        event(new ScheduleStatusUpdated($schedule));
+
         return redirect()->route('driver.collection-tracker')->with('success', 'Schedule aborted successfully');
     }
 
@@ -194,6 +209,9 @@ class WasteTrackerDriverController extends Controller
             'completed_at' => now(),
             'notes' => $request->notes,
         ]);
+
+        // Broadcast schedule failure
+        event(new ScheduleStatusUpdated($schedule));
 
         return redirect()->route('driver.collection-tracker');
     }
@@ -219,12 +237,18 @@ class WasteTrackerDriverController extends Controller
                     'status' => 'success',
                     'completed_at' => now(),
                 ]);
+
+                // Broadcast schedule completion
+                event(new ScheduleStatusUpdated($schedule));
             } else {
                 // If some stations failed, mark as failed
                 $schedule->update([
                     'status' => 'failed',
                     'completed_at' => now(),
                 ]);
+
+                // Broadcast schedule failure
+                event(new ScheduleStatusUpdated($schedule));
             }
         }
     }

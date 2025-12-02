@@ -10,6 +10,7 @@ use App\Http\Controllers\{
     DriverScheduleController,
     MonitoringController,
     NotificationController, // Add this line
+    ProperSegrationController,
     RegisterController,
     ResidentComplaintController,
     ResidentController,
@@ -133,6 +134,8 @@ Route::prefix('resident')
     ->middleware(['auth', 'role:resident'])
     ->group(function () {
         Route::get('/dashboard', [ResidentController::class, 'index'])->name('resident.dashboard');
+
+        Route::get('/proper-segregation', [ProperSegrationController::class, 'index'])->name('resident.proper-segregation');
 
         Route::get('/complaint', [ResidentComplaintController::class, 'index'])->name('resident.complaints.index');
         Route::post('/complaint', [ResidentComplaintController::class, 'store'])->name('resident.complaints.store');

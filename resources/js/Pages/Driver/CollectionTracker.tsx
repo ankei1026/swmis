@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { toast } from 'sonner';
 import Layout from '@/Pages/Layout/LayoutDriver';
 import Title from '@/Pages/Components/Title';
 import Map from '../Components/Map';
@@ -72,6 +73,21 @@ const getStatusColor = (status: string) => {
     return colors[status as keyof typeof colors] || '#6B7280';
 };
 
+// Format schedule date to 'December 12, 2025' format
+const formatScheduleDate = (dateString: string): string => {
+    if (!dateString) return '';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    } catch (e) {
+        return dateString;
+    }
+};
+
 // Status badge component
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     const getBadgeStyle = () => {
@@ -114,6 +130,28 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 const CollectionTracker: React.FC<Props> = ({ schedules }) => {
     const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
     const [currentAction, setCurrentAction] = useState<string>('');
+
+    // Listen for real-time schedule completion
+    useEffect(() => {
+        const echo = (window as any).Echo;
+        if (!echo || !selectedSchedule) return;
+
+        const channel = echo.channel(`driver.${selectedSchedule.id}`);
+        const handleScheduleUpdate = (payload: any) => {
+            if (payload && payload.id === selectedSchedule.id && (payload.status === 'success' || payload.status === 'completed')) {
+                toast.success('Route completed!');
+                setRouteCompleted(true);
+                setSelectedSchedule(null);
+            }
+        };
+        channel.listen('schedule.updated', handleScheduleUpdate);
+        channel.listen('.schedule.updated', handleScheduleUpdate);
+        return () => {
+            channel.stopListening('schedule.updated', handleScheduleUpdate);
+            channel.stopListening('.schedule.updated', handleScheduleUpdate);
+            channel.unsubscribe();
+        };
+    }, [selectedSchedule]);
 
     // Set selected schedule from localStorage or default to first schedule
     useEffect(() => {
@@ -270,17 +308,41 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
         }, {
             onFinish: () => {
                 setCurrentAction('');
+                // Show toast for station updates so driver gets immediate feedback
+                if (status === 'completed') {
+                    try {
+                        const stations = selectedSchedule?.stations || [];
+                        const station = stations.find(s => s.id === stationId);
+                        const maxOrder = stations.length ? Math.max(...stations.map(s => s.order)) : -1;
+                        const isLast = station ? station.order === maxOrder : false;
+                        if (isLast) {
+                            toast.success('Final station collection completed. Tap Complete Route to finish.');
+                        } else {
+                            toast.success('Station collection completed.');
+                        }
+                    } catch (e) {
+                        toast.success('Station updated.');
+                    }
+                } else {
+                    toast.success('Station status updated.');
+                }
+
+                // Refresh data to reflect server state. Consider local state updates for smoother UX.
                 router.reload();
             },
         });
     };
 
+    const [routeCompleted, setRouteCompleted] = useState(false);
     const handleCompleteSchedule = (scheduleId: number) => {
         setCurrentAction('completing');
         router.post(`/driver/schedules/${scheduleId}/complete`, {}, {
             onFinish: () => {
                 setCurrentAction('');
-                router.reload();
+                // Immediate feedback for drivers
+                toast.success('Route completed!');
+                setRouteCompleted(true);
+                setSelectedSchedule(null);
             },
         });
     };
@@ -375,121 +437,135 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                         <div className="lg:col-span-2 space-y-6">
                             {/* Schedule Selector Card */}
                             <div className="bg-white rounded-xl shadow-sm border p-6">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                                    <div className="flex-1">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Select Collection Schedule
-                                        </label>
-                                        <select
-                                            value={selectedSchedule?.id || ''}
-                                            onChange={(e) => {
-                                                const schedule = schedules.find(s => s.id === parseInt(e.target.value));
-                                                handleScheduleChange(schedule || null);
-                                            }}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                                        >
-                                            <option value="">Choose a schedule to track...</option>
-                                            {schedules.map(schedule => (
-                                                <option key={schedule.id} value={schedule.id}>
-                                                    {schedule.route_name} • {schedule.date} {schedule.time} • {schedule.status.replace('_', ' ')}
-                                                </option>
-                                            ))}
-                                        </select>
+                                {routeCompleted ? (
+                                    <div className="flex flex-col items-center justify-center py-16">
+                                        <div className="text-5xl mb-4">🎉</div>
+                                        <div className="text-2xl font-bold text-green-700 mb-2">Route Completed!</div>
+                                        <div className="text-gray-600 mb-4">You have finished all stations for this route.</div>
+                                        <button
+                                            className="mt-2 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700"
+                                            onClick={() => { setRouteCompleted(false); setSelectedSchedule(null); }}
+                                        >Back to Schedules</button>
                                     </div>
-
-                                    {selectedSchedule && (
-                                        <div className="flex-shrink-0">
-                                            <StatusBadge status={selectedSchedule.status} />
-                                        </div>
-                                    )}
-                                </div>
-
-                                {selectedSchedule && (
-                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100">
-                                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                ) : (
+                                    <>
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                                             <div className="flex-1">
-                                                <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedSchedule.route_name}</h3>
-                                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span>📅</span>
-                                                        <span>{selectedSchedule.date}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span>🕒</span>
-                                                        <span>{selectedSchedule.time}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span>📍</span>
-                                                        <span>{selectedSchedule.stations.length} Stations</span>
-                                                    </div>
-                                                    {completionStats?.currentStation && (
-                                                        <div className="flex items-center gap-1.5 text-blue-600 font-medium">
-                                                            <TruckIcon size={24} />
-                                                            <span>
-                                                                {completionStats.isLastStation ? 'Final: ' : 'Current: '}
-                                                                {completionStats.currentStation}
-                                                            </span>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                    Select Collection Schedule
+                                                </label>
+                                                <select
+                                                    value={selectedSchedule?.id || ''}
+                                                    onChange={(e) => {
+                                                        const schedule = schedules.find(s => s.id === parseInt(e.target.value));
+                                                        handleScheduleChange(schedule || null);
+                                                    }}
+                                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                                                >
+                                                    <option value="">Choose a schedule to track...</option>
+                                                    {schedules.map(schedule => (
+                                                        <option key={schedule.id} value={schedule.id}>
+                                                            {schedule.route_name} • {formatScheduleDate(schedule.date)} {schedule.time} • {schedule.status.replace('_', ' ')}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {selectedSchedule && (
+                                                <div className="flex-shrink-0">
+                                                    <StatusBadge status={selectedSchedule.status} />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {selectedSchedule && (
+                                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100">
+                                                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                                    <div className="flex-1">
+                                                        <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedSchedule.route_name}</h3>
+                                                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span>📅</span>
+                                                                <span>{formatScheduleDate(selectedSchedule.date)}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span>🕒</span>
+                                                                <span>{selectedSchedule.time}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span>📍</span>
+                                                                <span>{selectedSchedule.stations.length} Stations</span>
+                                                            </div>
+                                                            {completionStats?.currentStation && (
+                                                                <div className="flex items-center gap-1.5 text-blue-600 font-medium">
+                                                                    <TruckIcon size={24} />
+                                                                    <span>
+                                                                        {completionStats.isLastStation ? 'Final: ' : 'Current: '}
+                                                                        {completionStats.currentStation}
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    )}
+                                                    </div>
+
+                                                    <div className="flex gap-3">
+                                                        {canStartSchedule && (
+                                                            <button
+                                                                onClick={() => handleStartSchedule(selectedSchedule.id)}
+                                                                disabled={currentAction === 'starting'}
+                                                                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg disabled:opacity-50 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
+                                                            >
+                                                                {currentAction === 'starting' ? (
+                                                                    <>
+                                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                        Starting...
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <span>🚀</span>
+                                                                        Start Route
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                        )}
+
+                                                        {canCompleteSchedule && (
+                                                            <button
+                                                                onClick={() => handleCompleteSchedule(selectedSchedule.id)}
+                                                                disabled={currentAction === 'completing'}
+                                                                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg disabled:opacity-50 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
+                                                            >
+                                                                {currentAction === 'completing' ? (
+                                                                    <>
+                                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                        Completing...
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <span>🎯</span>
+                                                                        Complete Route
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-4">
+                                                    <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                                                        <span>Route Progress</span>
+                                                        <span>{selectedSchedule.progress_percentage}% Complete</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-3">
+                                                        <div
+                                                            className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500 ease-out shadow-sm"
+                                                            style={{ width: `${selectedSchedule.progress_percentage}%` }}
+                                                        ></div>
+                                                    </div>
                                                 </div>
                                             </div>
-
-                                            <div className="flex gap-3">
-                                                {canStartSchedule && (
-                                                    <button
-                                                        onClick={() => handleStartSchedule(selectedSchedule.id)}
-                                                        disabled={currentAction === 'starting'}
-                                                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg disabled:opacity-50 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
-                                                    >
-                                                        {currentAction === 'starting' ? (
-                                                            <>
-                                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                                Starting...
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <span>🚀</span>
-                                                                Start Route
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                )}
-
-                                                {canCompleteSchedule && (
-                                                    <button
-                                                        onClick={() => handleCompleteSchedule(selectedSchedule.id)}
-                                                        disabled={currentAction === 'completing'}
-                                                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg disabled:opacity-50 transition-all duration-200 font-semibold shadow-sm hover:shadow-md"
-                                                    >
-                                                        {currentAction === 'completing' ? (
-                                                            <>
-                                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                                Completing...
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <span>🎯</span>
-                                                                Complete Route
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-4">
-                                            <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
-                                                <span>Route Progress</span>
-                                                <span>{selectedSchedule.progress_percentage}% Complete</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-3">
-                                                <div
-                                                    className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500 ease-out shadow-sm"
-                                                    style={{ width: `${selectedSchedule.progress_percentage}%` }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
 
@@ -650,11 +726,18 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
 
                                                                 {nextAction && (
                                                                     <button
-                                                                        onClick={() => handleUpdateStationStatus(
-                                                                            selectedSchedule.id,
-                                                                            station.id,
-                                                                            nextAction.action
-                                                                        )}
+                                                                        onClick={() => {
+                                                                            if (nextAction.isFinalAction) {
+                                                                                // Final action should finish the schedule, not just update the station
+                                                                                handleCompleteSchedule(selectedSchedule.id);
+                                                                            } else {
+                                                                                handleUpdateStationStatus(
+                                                                                    selectedSchedule.id,
+                                                                                    station.id,
+                                                                                    nextAction.action
+                                                                                );
+                                                                            }
+                                                                        }}
                                                                         disabled={currentAction.includes(`updating-${station.id}`)}
                                                                         className={`flex items-center gap-1.5 ${nextAction.isFinalAction
                                                                                 ? 'bg-green-600 hover:bg-green-700'
