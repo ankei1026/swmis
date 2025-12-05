@@ -14,6 +14,7 @@ const LayoutDriver = ({ title, children }: LayoutDriverProps) => {
 
     return (
         <Box sx={{ display: 'flex' }}>
+            <meta name="csrf-token" content={document.querySelector('meta[name="csrf-token"]')?.content || ''} />
             <CssBaseline />
             <AppBar open={open} title={title} onOpen={() => setOpen(true)} />
             <DrawerDriver open={open} onClose={() => setOpen(false)} />

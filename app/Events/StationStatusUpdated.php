@@ -7,7 +7,6 @@ use App\Models\StationRoute;
 use App\Models\ScheduleStationLog;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -37,7 +36,10 @@ class StationStatusUpdated implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('driver.' . $this->driverId);
+        return [
+            new Channel('driver.' . $this->driverId),
+            new Channel('monitoring')  // Add monitoring channel
+        ];
     }
 
     public function broadcastAs()
@@ -55,9 +57,9 @@ class StationStatusUpdated implements ShouldBroadcast
                 'latitude' => $this->station->latitude,
                 'longitude' => $this->station->longitude,
                 'status' => $this->stationLog ? $this->stationLog->status : 'pending',
-                'arrived_at' => $this->stationLog?->arrived_at,
-                'completed_at' => $this->stationLog?->completed_at,
-                'departed_at' => $this->stationLog?->departed_at,
+                'arrived_at' => $this->stationLog?->arrived_at?->toDateTimeString(),
+                'completed_at' => $this->stationLog?->completed_at?->toDateTimeString(),
+                'departed_at' => $this->stationLog?->departed_at?->toDateTimeString(),
             ],
         ];
     }

@@ -191,20 +191,20 @@ const UserVerificationCreate = ({ verifications }: UserVerificationCreateProps) 
                             {errors.type && <p className="mt-1 text-sm text-red-500">{errors.type}</p>}
                         </FormInputField>
 
-                        {/* Document Photo/File */}
+                        {/* Photo */}
                         <FormInputField>
-                            <FormLabel htmlFor="photo" textLabel="Upload Document" />
+                            <FormLabel htmlFor="photo" textLabel="Upload Photo" />
                             <input
                                 id="photo"
                                 type="file"
-                                accept="image/*,.pdf,.doc,.docx"
+                                accept="image/*"
                                 onChange={handleFileChange}
                                 className="w-full border border-gray-300 rounded-md p-2 text-sm"
                                 required
                             />
                             {errors.photo && <p className="mt-1 text-sm text-red-500">{errors.photo}</p>}
                             <p className="text-xs text-gray-500 mt-1">
-                                Accepted formats: JPG, PNG, JPEG
+                                Accepted formats: JPG, PNG, JPEG, WEBP
                             </p>
                         </FormInputField>
 
@@ -247,10 +247,10 @@ const UserVerificationCreate = ({ verifications }: UserVerificationCreateProps) 
                         <DialogTitle>Verification Document</DialogTitle>
                         <DialogContent>
                             {selectedImage && (
-                                <img 
-                                    src={selectedImage} 
-                                    alt="Verification Document" 
-                                    className="max-h-[80vh] max-w-full rounded-md" 
+                                <img
+                                    src={selectedImage}
+                                    alt="Verification Document"
+                                    className="max-h-[80vh] max-w-full rounded-md"
                                 />
                             )}
                         </DialogContent>

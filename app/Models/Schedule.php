@@ -28,6 +28,7 @@ class Schedule extends Model
         'updated_at' => 'datetime',
     ];
 
+    // Relationships
     public function driver()
     {
         return $this->belongsTo(User::class, 'driver_id');
@@ -38,47 +39,102 @@ class Schedule extends Model
         return $this->belongsTo(ScheduleRoute::class, 'schedule_route_id');
     }
 
-    // Fix this relationship - it should get stations through the scheduleRoute
-    public function stationRoutes()
-    {
-        return $this->hasManyThrough(
-            StationRoute::class,
-            ScheduleRoute::class,
-            'id', // Foreign key on ScheduleRoute table
-            'id', // Foreign key on StationRoute table  
-            'schedule_route_id', // Local key on schedules table
-            'id' // Local key on schedule_routes table
-        );
-    }
-
-    // Or better: access station routes through scheduleRoute
-    public function getStationRoutesAttribute()
-    {
-        return $this->scheduleRoute->station_routes ?? collect();
-    }
-
     public function stationLogs()
     {
         return $this->hasMany(ScheduleStationLog::class)->orderBy('station_order');
     }
 
+    // Access stations through scheduleRoute
+    public function getStationRoutesAttribute()
+    {
+        if (!$this->scheduleRoute) {
+            return collect();
+        }
+
+        $stationOrder = $this->scheduleRoute->station_order ?? [];
+        if (empty($stationOrder) || !is_array($stationOrder)) {
+            return collect();
+        }
+
+        $stations = \App\Models\StationRoute::whereIn('id', $stationOrder)->get();
+
+        // Order them according to station_order
+        return collect($stationOrder)->map(function ($id) use ($stations) {
+            return $stations->where('id', $id)->first();
+        })->filter();
+    }
+
+    // Get current station (the one being worked on or next in line)
     public function getCurrentStationAttribute()
     {
-        return $this->stationLogs()
+        // First try to find a station that's currently active
+        $activeStation = $this->stationLogs()
             ->whereIn('status', ['arrived', 'collecting'])
-            ->orWhere(function ($query) {
-                $query->where('status', 'pending')
-                    ->whereNull('completed_at');
-            })
             ->orderBy('station_order')
+            ->first();
+
+        if ($activeStation) {
+            return $activeStation;
+        }
+
+        // If no active station, find the first pending station
+        $pendingStation = $this->stationLogs()
+            ->where('status', 'pending')
+            ->orderBy('station_order')
+            ->first();
+
+        if ($pendingStation) {
+            return $pendingStation;
+        }
+
+        // If all are completed/departed, return the last one
+        return $this->stationLogs()
+            ->whereIn('status', ['completed', 'departed'])
+            ->orderBy('station_order', 'desc')
             ->first();
     }
 
+
+    // Calculate progress percentage
     public function getProgressPercentageAttribute()
     {
-        $totalStations = $this->stationLogs()->count();
-        $completedStations = $this->stationLogs()->where('status', 'completed')->count();
+        // Always return 100% if schedule is completed or success
+        if (in_array($this->status, ['completed', 'success'])) {
+            return 100;
+        }
 
-        return $totalStations > 0 ? round(($completedStations / $totalStations) * 100) : 0;
+        $totalStations = $this->stationRoutes->count();
+        if ($totalStations === 0) {
+            return 0;
+        }
+
+        $completedStations = $this->stationLogs()
+            ->where('status', 'completed')
+            ->count();
+
+        // If all stations are completed but schedule status isn't "completed" or "success"
+        if ($completedStations === $totalStations && !in_array($this->status, ['completed', 'success'])) {
+            return 100;
+        }
+
+        return round(($completedStations / $totalStations) * 100);
+    }
+
+    // Helper method to get all stations with their status
+    public function getStationsWithStatusAttribute()
+    {
+        $stationRoutes = $this->stationRoutes;
+        $stationLogs = $this->stationLogs;
+
+        return $stationRoutes->map(function ($stationRoute, $index) use ($stationLogs) {
+            $log = $stationLogs->where('station_route_id', $stationRoute->id)->first();
+
+            return [
+                'station' => $stationRoute,
+                'log' => $log,
+                'status' => $log ? $log->status : 'pending',
+                'order' => $index,
+            ];
+        });
     }
 }

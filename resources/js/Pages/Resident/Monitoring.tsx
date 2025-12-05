@@ -1,6 +1,7 @@
 import LayoutResident from '@/Pages/Layout/LayoutResident';
 import { Head } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import Map from '../Components/Map';
 import Title from '../Components/Title';
 
@@ -134,30 +135,82 @@ const getStatusColor = (status: string) => {
     return colors[status as keyof typeof colors] || '#6B7280';
 };
 
+// Format schedule date to 'December 12, 2025' format
+const formatScheduleDate = (dateString: string | null): string => {
+    if (!dateString) return '';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    } catch (e) {
+        return dateString || '';
+    }
+};
+
 const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
-    const [schedules, setSchedules] = useState<Schedule[]>(activeSchedules);
+    // Patch: When a schedule is completed, force all stations to completed and progress to 100%
+    const patchCompletedSchedules = (schedules: Schedule[]): Schedule[] => {
+        return schedules.map(schedule => {
+            if (schedule.status === 'completed' || schedule.status === 'success') {
+                return {
+                    ...schedule,
+                    status: 'completed', // Normalize 'success' to 'completed'
+                    progress_percentage: 100, // Force 100%
+                    stations: schedule.stations.map(station => ({
+                        ...station,
+                        status: 'completed', // Force ALL stations to completed
+                        completed_at: station.completed_at || station.arrived_at || new Date().toISOString(), // Ensure completion time
+                    })),
+                    current_station: schedule.stations.length > 0
+                        ? schedule.stations[schedule.stations.length - 1].name
+                        : 'Route Completed',
+                };
+            }
+            return schedule;
+        });
+    };;
+
+    const [schedules, setSchedules] = useState<Schedule[]>(patchCompletedSchedules(activeSchedules));
     const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
     const [lastUpdate, setLastUpdate] = useState<string>(new Date().toISOString());
     const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
 
-    // Set selected schedule from localStorage or default to first schedule
+    // Define refreshData early so it can be used in other effects
+    const refreshData = useCallback((scheduleIdToUpdate?: number) => {
+        fetch('/resident/monitoring/live-updates')
+            .then(response => response.json())
+            .then(data => {
+                const patchedSchedules = patchCompletedSchedules(data.schedules);
+                setSchedules(patchedSchedules);
+                setLastUpdate(data.last_updated);
+
+                // Update selected schedule if it exists in the new data
+                setSelectedSchedule(prev => {
+                    if (!prev) return null;
+                    const updatedSchedule = patchedSchedules.find((s: Schedule) => s.id === prev.id);
+                    return updatedSchedule || prev;
+                });
+            })
+            .catch(error => console.error('Failed to fetch updates:', error));
+    }, []);
+
     useEffect(() => {
-        if (schedules.length > 0) {
-            // Try to get the last selected schedule from localStorage
-            const savedScheduleId = localStorage.getItem('monitoringSelectedScheduleId');
-            
-            if (savedScheduleId) {
-                const savedSchedule = schedules.find(s => s.id === parseInt(savedScheduleId));
-                if (savedSchedule) {
-                    setSelectedSchedule(savedSchedule);
-                    return;
+        if (selectedSchedule && selectedSchedule.status === 'completed') {
+            // Force refresh data when schedule is completed
+            refreshData();
+
+            // Force update stations to completed in local state
+            setSchedules(prev => prev.map(s => {
+                if (s.id === selectedSchedule.id) {
+                    return patchCompletedSchedules([s])[0];
                 }
-            }
-            
-            // If no saved schedule or saved schedule not found, use the first one
-            setSelectedSchedule(schedules[0]);
+                return s;
+            }));
         }
-    }, [schedules]);
+    }, [selectedSchedule?.status])
 
     // Save selected schedule to localStorage whenever it changes
     useEffect(() => {
@@ -168,8 +221,13 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
 
     // Handle schedule change with localStorage persistence
     const handleScheduleChange = (schedule: Schedule | null) => {
-        setSelectedSchedule(schedule);
-        // The useEffect above will automatically save to localStorage
+        if (schedule?.status === 'completed') {
+            // Apply completion patch before setting
+            const patchedSchedule = patchCompletedSchedules([schedule])[0];
+            setSelectedSchedule(patchedSchedule);
+        } else {
+            setSelectedSchedule(schedule);
+        }
     };
 
     // Auto-refresh data every 30 seconds
@@ -177,40 +235,26 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
         if (!autoRefresh) return;
 
         const interval = setInterval(() => {
-            fetch('/admin/monitoring/live-updates')
-                .then(response => response.json())
-                .then(data => {
-                    setSchedules(data.schedules);
-                    setLastUpdate(data.last_updated);
-                    
-                    // Update selected schedule if it exists in the new data
-                    if (selectedSchedule) {
-                        const updatedSelectedSchedule = data.schedules.find((s: Schedule) => s.id === selectedSchedule.id);
-                        if (updatedSelectedSchedule) {
-                            setSelectedSchedule(updatedSelectedSchedule);
-                        }
-                    }
-                })
-                .catch(error => console.error('Failed to fetch updates:', error));
+            refreshData();
         }, 30000);
 
         return () => clearInterval(interval);
-    }, [autoRefresh, selectedSchedule]);
+    }, [autoRefresh, refreshData]);
 
     // Get current active station for each schedule - Same logic as CollectionTracker
-    const getCurrentActiveStation = (schedule: Schedule) => {
+    const getCurrentActiveStation = useCallback((schedule: Schedule) => {
         if (!schedule.stations) return null;
 
         const stations = schedule.stations.sort((a, b) => a.order - b.order);
-        
+
         // First, look for stations that are actively being worked on
         const collectingStation = stations.find(station => station.status === 'collecting');
         const arrivedStation = stations.find(station => station.status === 'arrived');
-        
+
         // If we're actively collecting or arrived at a station, that's the current one
         if (collectingStation) return collectingStation;
         if (arrivedStation) return arrivedStation;
-        
+
         // If no active station, find the first pending station
         const pendingStations = stations.filter(station => station.status === 'pending');
         if (pendingStations.length > 0) return pendingStations[0];
@@ -224,83 +268,78 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
         }
 
         return null;
-    };
+    }, []);
 
-    // Prepare map markers for all active schedules with Truck SVG for current stations
-    const mapMarkers = schedules.flatMap(schedule => {
-        if (!schedule.stations) return [];
+    // Prepare map markers for selected schedule only
+    const mapMarkers = selectedSchedule && selectedSchedule.stations ? selectedSchedule.stations.map(station => {
+        const currentActiveStation = getCurrentActiveStation(selectedSchedule);
+        const isCurrentActiveStation = currentActiveStation?.id === station.id;
+        const isLastStation = station.order === Math.max(...selectedSchedule.stations.map(s => s.order));
 
-        const currentActiveStation = getCurrentActiveStation(schedule);
-
-        return schedule.stations.map(station => {
-            const isCurrentActiveStation = currentActiveStation?.id === station.id;
-            const isLastStation = station.order === Math.max(...schedule.stations.map(s => s.order));
-
-            return {
-                id: `${schedule.id}-${station.id}`,
-                position: [station.latitude, station.longitude] as [number, number],
-                popup: (
-                    <div className="p-3 min-w-[280px] bg-white rounded-lg shadow-lg border">
-                        <div className="flex items-center gap-3 mb-2">
-                            {isCurrentActiveStation ? (
-                                <div className="text-blue-500 flex-shrink-0">
-                                    <TruckIcon size={32} />
-                                </div>
-                            ) : (
-                                <div className="w-4 h-4 rounded-full flex-shrink-0" style={{
-                                    backgroundColor: getStatusColor(station.status)
-                                }}></div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                                <strong className="text-sm font-semibold text-gray-900 block">{station.name}</strong>
-                                {isCurrentActiveStation && (
-                                    <span className="text-xs text-blue-600 font-medium">
-                                        {isLastStation ? '🏁 Final Station' : '🚛 Collection Truck'}
-                                    </span>
-                                )}
+        return {
+            id: `${selectedSchedule.id}-${station.id}`,
+            position: [station.latitude, station.longitude] as [number, number],
+            popup: (
+                <div className="p-3 min-w-[280px] bg-white rounded-lg shadow-lg border">
+                    <div className="flex items-center gap-3 mb-2">
+                        {isCurrentActiveStation ? (
+                            <div className="text-blue-500 flex-shrink-0">
+                                <TruckIcon size={32} />
                             </div>
-                        </div>
-                        <div className="flex items-center gap-2 mb-3">
-                            <StatusBadge status={station.status} />
-                        </div>
-                        <div className="space-y-1.5 text-xs text-gray-600">
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-600">Driver:</span>
-                                <span className="font-medium">{schedule.driver_name}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-600">Route:</span>
-                                <span className="font-medium">{schedule.route_name}</span>
-                            </div>
-                            {station.arrived_at && (
-                                <div className="flex items-center gap-2">
-                                    <span className="w-4">🟢</span>
-                                    <span>Arrived: {new Date(station.arrived_at).toLocaleTimeString()}</span>
-                                </div>
-                            )}
-                            {station.completed_at && (
-                                <div className="flex items-center gap-2">
-                                    <span className="w-4">✅</span>
-                                    <span>Completed: {new Date(station.completed_at).toLocaleTimeString()}</span>
-                                </div>
-                            )}
-                            {station.departed_at && (
-                                <div className="flex items-center gap-2">
-                                    <span className="w-4">🚗</span>
-                                    <span>Departed: {new Date(station.departed_at).toLocaleTimeString()}</span>
-                                </div>
+                        ) : (
+                            <div className="w-4 h-4 rounded-full flex-shrink-0" style={{
+                                backgroundColor: getStatusColor(station.status)
+                            }}></div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <strong className="text-sm font-semibold text-gray-900 block">{station.name}</strong>
+                            {isCurrentActiveStation && (
+                                <span className="text-xs text-blue-600 font-medium">
+                                    {isLastStation ? '🏁 Final Station' : '🚛 Collection Truck'}
+                                </span>
                             )}
                         </div>
                     </div>
-                ),
-                color: getStatusColor(station.status),
-                useCircle: !isCurrentActiveStation,
-                useSvgIcon: isCurrentActiveStation,
-                svgIcon: isCurrentActiveStation ? <TruckIcon size={40} /> : undefined,
-                radius: isCurrentActiveStation ? 80 : 8,
-            };
-        });
-    });
+                    <div className="flex items-center gap-2 mb-3">
+                        <StatusBadge status={station.status} />
+                    </div>
+                    <div className="space-y-1.5 text-xs text-gray-600">
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Driver:</span>
+                            <span className="font-medium">{selectedSchedule.driver_name}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Route:</span>
+                            <span className="font-medium">{selectedSchedule.route_name}</span>
+                        </div>
+                        {station.arrived_at && (
+                            <div className="flex items-center gap-2">
+                                <span className="w-4">🟢</span>
+                                <span>Arrived: {new Date(station.arrived_at).toLocaleTimeString()}</span>
+                            </div>
+                        )}
+                        {station.completed_at && (
+                            <div className="flex items-center gap-2">
+                                <span className="w-4">✅</span>
+                                <span>Completed: {new Date(station.completed_at).toLocaleTimeString()}</span>
+                            </div>
+                        )}
+                        {station.departed_at && (
+                            <div className="flex items-center gap-2">
+                                <span className="w-4">🚗</span>
+                                <span>Departed: {new Date(station.departed_at).toLocaleTimeString()}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ),
+            color: getStatusColor(station.status),
+            useCircle: !isCurrentActiveStation,
+            useSvgIcon: isCurrentActiveStation,
+            svgIcon: isCurrentActiveStation ? <TruckIcon size={40} /> : undefined,
+            radius: isCurrentActiveStation ? 80 : 8,
+        };
+    }) : [];
 
     // Prepare route paths for selected schedule
     const routePath = selectedSchedule?.stations
@@ -318,23 +357,136 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
         return `${Math.floor(diffInSeconds / 86400)}d ago`;
     };
 
-    const refreshData = () => {
-        fetch('/admin/monitoring/live-updates')
-            .then(response => response.json())
-            .then(data => {
-                setSchedules(data.schedules);
-                setLastUpdate(data.last_updated);
-                
-                // Update selected schedule if it exists in the new data
-                if (selectedSchedule) {
-                    const updatedSelectedSchedule = data.schedules.find((s: Schedule) => s.id === selectedSchedule.id);
-                    if (updatedSelectedSchedule) {
-                        setSelectedSchedule(updatedSelectedSchedule);
-                    }
+    // Real-time listeners via Laravel Echo - Setup once on mount
+    useEffect(() => {
+        console.log('Setting up Echo listeners...');
+        const echo = (window as any).Echo;
+
+        if (!echo) {
+            console.error('Echo is not available on window object');
+            console.log('Make sure Echo is initialized in your app.tsx/bootstrap.js');
+            return;
+        }
+
+        console.log('Echo found, broadcaster:', echo.connector?.options?.broadcaster);
+
+        // Clean up any existing listeners first
+        try {
+            echo.leave('monitoring');
+            console.log('Left previous monitoring channel');
+        } catch (e) {
+            console.log('No previous monitoring channel to leave');
+        }
+
+        // Subscribe to global monitoring channel
+        const channel = echo.channel('monitoring');
+        console.log('Channel created');
+
+        const handleScheduleUpdate = (payload: any) => {
+            console.log('Schedule update received:', payload);
+
+            if (!payload || !payload.id) {
+                console.error('Invalid schedule payload:', payload);
+                return;
+            }
+
+            // Show toast if schedule is completed or success
+            if (payload.status === 'completed' || payload.status === 'success') {
+                toast.success(`Driver completed route: ${payload.route_name}`);
+            }
+
+            // Apply the completed schedule patch
+            const patchedPayload = patchCompletedSchedules([payload])[0];
+
+            setSchedules(prev => {
+                const exists = prev.some(s => s.id === payload.id);
+
+                if (exists) {
+                    const updated = patchCompletedSchedules(
+                        prev.map(s => s.id === payload.id ? patchedPayload : s)
+                    );
+                    return updated;
                 }
-            })
-            .catch(error => console.error('Failed to fetch updates:', error));
-    };
+
+                const newSchedules = patchCompletedSchedules([patchedPayload, ...prev]);
+                return newSchedules;
+            });
+
+            // Update selected schedule if it matches
+            setSelectedSchedule(prev => {
+                if (prev && prev.id === payload.id) {
+                    console.log('Updating selected schedule:', patchedPayload);
+                    return patchedPayload;
+                }
+                return prev;
+            });
+        };
+
+        const handleStationUpdate = (payload: any) => {
+            console.log('Station update received:', payload);
+
+            if (!payload || !payload.schedule_id) {
+                console.error('Invalid station payload:', payload);
+                return;
+            }
+
+            // Update the schedule with new station data
+            setSchedules(prev => prev.map(s => {
+                if (s.id === payload.schedule_id && payload.station) {
+                    return {
+                        ...s,
+                        stations: s.stations.map(st => 
+                            st.id === payload.station.id 
+                                ? { ...st, ...payload.station }
+                                : st
+                        )
+                    };
+                }
+                return s;
+            }));
+
+            // Update selected schedule if it matches
+            setSelectedSchedule(prev => {
+                if (prev && prev.id === payload.schedule_id && payload.station) {
+                    return {
+                        ...prev,
+                        stations: prev.stations.map(st =>
+                            st.id === payload.station.id
+                                ? { ...st, ...payload.station }
+                                : st
+                        )
+                    };
+                }
+                return prev;
+            });
+        };
+
+        // Bind listeners - use the correct event names without dots
+        channel.listen('schedule.updated', handleScheduleUpdate);
+        channel.listen('station.updated', handleStationUpdate);
+
+        console.log('Listeners bound successfully');
+        console.log('Connected to monitoring channel');
+
+        // Cleanup function
+        return () => {
+            console.log('Cleaning up Echo listeners...');
+            try {
+                // For Reverb, we need to use stopListening for each event
+                channel.stopListening('schedule.updated', handleScheduleUpdate);
+                channel.stopListening('station.updated', handleStationUpdate);
+                echo.leave('monitoring');
+                console.log('Echo cleanup complete');
+            } catch (e) {
+                console.error('Error cleaning up Echo listeners:', e);
+            }
+        };
+    }, []);
+
+    // Initial data fetch
+    useEffect(() => {
+        refreshData();
+    }, []);
 
     return (
         <LayoutResident>
@@ -372,51 +524,53 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
 
                                 {/* Selected Schedule Overview */}
                                 {selectedSchedule && (
-                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100">
-                                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                                            <div className="flex-1">
-                                                <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedSchedule.route_name}</h3>
-                                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span>👨‍💼</span>
-                                                        <span>{selectedSchedule.driver_name}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span>📍</span>
-                                                        <span>{selectedSchedule.stations.length} Stations</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span>🕒</span>
-                                                        <span>Started: {selectedSchedule.started_at ? new Date(selectedSchedule.started_at).toLocaleTimeString() : 'Not started'}</span>
-                                                    </div>
-                                                    {getCurrentActiveStation(selectedSchedule) && (
-                                                        <div className="flex items-center gap-1.5 text-blue-600 font-medium">
-                                                            <TruckIcon size={24} />
-                                                            <span>Current: {getCurrentActiveStation(selectedSchedule)?.name}</span>
+                                    <>
+                                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100 mb-6">
+                                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                                <div className="flex-1">
+                                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedSchedule.route_name}</h3>
+                                                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span>👨‍💼</span>
+                                                            <span>{selectedSchedule.driver_name}</span>
                                                         </div>
-                                                    )}
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span>📍</span>
+                                                            <span>{selectedSchedule.stations.length} Stations</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span>🕒</span>
+                                                            <span>Started: {selectedSchedule.started_at ? formatScheduleDate(selectedSchedule.started_at) : 'Not started'}</span>
+                                                        </div>
+                                                        {getCurrentActiveStation(selectedSchedule) && (
+                                                            <div className="flex items-center gap-1.5 text-blue-600 font-medium">
+                                                                <TruckIcon size={24} />
+                                                                <span>Current: {getCurrentActiveStation(selectedSchedule)?.name}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <StatusBadge status={selectedSchedule.status} />
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-2">
-                                                <StatusBadge status={selectedSchedule.status} />
+                                            {/* Progress Section */}
+                                            <div className="mt-4">
+                                                <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                                                    <span>Route Progress</span>
+                                                    <span>{selectedSchedule.progress_percentage}% Complete</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-3">
+                                                    <div
+                                                        className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500 ease-out shadow-sm"
+                                                        style={{ width: `${selectedSchedule.progress_percentage}%` }}
+                                                    ></div>
+                                                </div>
                                             </div>
                                         </div>
-
-                                        {/* Progress Section */}
-                                        <div className="mt-4">
-                                            <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
-                                                <span>Route Progress</span>
-                                                <span>{selectedSchedule.progress_percentage}% Complete</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-3">
-                                                <div
-                                                    className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500 ease-out shadow-sm"
-                                                    style={{ width: `${selectedSchedule.progress_percentage}%` }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </>
                                 )}
                             </div>
 
@@ -427,15 +581,16 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                         <span>🗺️</span>
                                         Live Route Tracking
                                     </h3>
-                                    <p className="text-sm text-gray-600 mt-1">
+                                    {/* FIXED: Changed from <p> to <div> */}
+                                    <div className="text-sm text-gray-600 mt-1">
                                         <span className="inline-flex items-center gap-1 mr-3">
                                             <TruckIcon size={16} /> Current Station
                                         </span>
                                         <span className="inline-flex items-center gap-1">
-                                            <div className="w-3 h-3 rounded-full bg-gray-500 mr-1"></div>
+                                            <span className="w-3 h-3 rounded-full bg-gray-500 mr-1"></span>
                                             Other Stations
                                         </span>
-                                    </p>
+                                    </div>
                                 </div>
                                 <div className="p-2">
                                     <Map
@@ -457,7 +612,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                         <span>🚛</span>
                                         Active Collections
                                     </h3>
-                                    <p className="text-sm text-gray-600 mt-1">Currently running schedules</p>
+                                    <div className="text-sm text-gray-600 mt-1">Currently running schedules</div>
                                 </div>
 
                                 <div className="p-4">
@@ -468,8 +623,8 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                                 <div
                                                     key={schedule.id}
                                                     className={`p-4 rounded-lg border-l-4 cursor-pointer transition-all duration-200 ${selectedSchedule?.id === schedule.id
-                                                            ? 'bg-blue-50 border-blue-500 shadow-md'
-                                                            : 'bg-white border-gray-200 hover:bg-gray-50 hover:shadow-sm'
+                                                        ? 'bg-blue-50 border-blue-500 shadow-md'
+                                                        : 'bg-white border-gray-200 hover:bg-gray-50 hover:shadow-sm'
                                                         }`}
                                                     onClick={() => handleScheduleChange(schedule)}
                                                 >
@@ -483,7 +638,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="font-semibold text-gray-900 text-sm">{schedule.driver_name}</h4>
-                                                                    <p className="text-xs text-gray-600">{schedule.route_name}</p>
+                                                                    <div className="text-xs text-gray-600">{schedule.route_name}</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -514,7 +669,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                                         </div>
                                                         {schedule.started_at && (
                                                             <div className="text-gray-500">
-                                                                🕒 Started: {new Date(schedule.started_at).toLocaleTimeString()}
+                                                                🕒 Started: {formatScheduleDate(schedule.started_at)}
                                                             </div>
                                                         )}
                                                         <div className="text-gray-400">
@@ -535,6 +690,86 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                 </div>
                             </div>
 
+                            {/* Station Progress List (read-only) */}
+                            {selectedSchedule && (
+                                <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
+                                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                        <span>📍</span>
+                                        Station Progress
+                                    </h3>
+                                    <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                                        {selectedSchedule.stations
+                                            .sort((a, b) => a.order - b.order)
+                                            .map((station) => {
+                                                const borderColor = getStatusColor(station.status);
+                                                const isCurrentActive = getCurrentActiveStation(selectedSchedule)?.id === station.id;
+                                                const isStationLast = station.order === Math.max(...selectedSchedule.stations.map(s => s.order));
+                                                return (
+                                                    <div
+                                                        key={station.id}
+                                                        className={`bg-white p-4 rounded-lg border-l-4 shadow-sm flex items-start gap-3 ${isCurrentActive ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}
+                                                        style={{ borderLeftColor: borderColor }}
+                                                    >
+                                                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border mt-0.5 relative ${isCurrentActive
+                                                            ? 'bg-blue-100 text-blue-700 border-blue-300'
+                                                            : 'bg-gray-100 text-gray-700 border-gray-300'
+                                                            }`}>
+                                                            {station.order + 1}
+                                                            {isCurrentActive && (
+                                                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-ping"></div>
+                                                            )}
+                                                            {isStationLast && (
+                                                                <div className="absolute -bottom-1 -right-1 text-xs">🏁</div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <h4 className="font-semibold text-gray-900 text-sm leading-tight">
+                                                                    {station.name}
+                                                                </h4>
+                                                                {isCurrentActive && (
+                                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                        <TruckIcon size={10} />
+                                                                        {isStationLast ? 'Final' : 'Current'}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="mb-2">
+                                                                <StatusBadge status={
+                                                                    selectedSchedule.status === 'completed'
+                                                                        ? 'completed'  // Override with completed if schedule is completed
+                                                                        : station.status
+                                                                } />
+                                                            </div>
+
+                                                            <div className="space-y-1 text-xs text-gray-500">
+                                                                {station.arrived_at && (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span>🟢</span>
+                                                                        <span>Arrived: {new Date(station.arrived_at).toLocaleTimeString()}</span>
+                                                                    </div>
+                                                                )}
+                                                                {station.completed_at && (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span>✅</span>
+                                                                        <span>Completed: {new Date(station.completed_at).toLocaleTimeString()}</span>
+                                                                    </div>
+                                                                )}
+                                                                {station.departed_at && (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span>🚗</span>
+                                                                        <span>Departed: {new Date(station.departed_at).toLocaleTimeString()}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Recently Completed Card */}
                             {schedules.filter(s => s.status === 'completed').length > 0 && (
                                 <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -553,7 +788,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                                         <div className="text-xs text-gray-600 truncate">{schedule.route_name}</div>
                                                     </div>
                                                     <div className="text-xs text-gray-500 whitespace-nowrap">
-                                                        {schedule.completed_at ? new Date(schedule.completed_at).toLocaleTimeString() : 'N/A'}
+                                                        {schedule.completed_at ? formatScheduleDate(schedule.completed_at) : 'N/A'}
                                                     </div>
                                                 </div>
                                             ))}

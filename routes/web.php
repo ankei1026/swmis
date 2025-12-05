@@ -88,18 +88,19 @@ Route::prefix('admin')
         Route::put('/district/{id}', [DistrictController::class, 'update'])->name('admin.district.update');
         Route::delete('/district/{id}', [DistrictController::class, 'destroy'])->name('admin.district.destroy');
 
-        // In routes/web.php
-        Route::get('/monitoring/live-updates', [MonitoringController::class, 'getLiveUpdates'])->name('admin.monitoring.live-updates');
-
-        // Scheduling and Monitoring
+        // Monitoring 
+        Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring');
+        Route::get('/monitoring/live-updates', [MonitoringController::class, 'getLiveUpdates'])->name('monitoring.live-updates');
+        Route::post('/monitoring/{schedule}/complete', [MonitoringController::class, 'completeSchedule'])->name('monitoring.complete-schedule');
+        Route::post('/monitoring/station-log/{log}/update-status', [MonitoringController::class, 'updateStationStatus'])->name('monitoring.update-station-status');
+        
+        // Scheduling
         Route::get('/scheduling/create', [SchedulingController::class, 'createScheduling'])->name('admin.scheduling.create');
         Route::get('/scheduling/list', [SchedulingController::class, 'listScheduling'])->name('admin.scheduling.list');
         Route::post('/scheduling/store', [SchedulingController::class, 'store'])->name('admin.scheduling.store');
         Route::get('/scheduling/{schedule}/edit', [SchedulingController::class, 'edit'])->name('admin.scheduling.edit');
         Route::put('/scheduling/{schedule}', [SchedulingController::class, 'update'])->name('admin.scheduling.update');
         Route::delete('/scheduling/{schedule}', [SchedulingController::class, 'destroy'])->name('admin.scheduling.destroy');
-
-        Route::get('/monitoring', [MonitoringController::class, 'index'])->name('admin.monitoring');
 
         Route::get('/user-verification', [UserVerificationController::class, 'adminIndex'])->name('admin.user-verification');
         Route::get('/user-verification/{id}', [UserVerificationController::class, 'adminShow'])->name('admin.user-verification.show');
@@ -148,7 +149,9 @@ Route::prefix('resident')
 
         Route::get('/collectiontracker', [ResidentWasteTrackerController::class, 'index'])->name('resident.collectiontracker');
 
+        Route::get('/monitoring', [MonitoringController::class, 'index'])->name('resident.monitoring');
         Route::get('/monitoring/live-updates', [ResidentWasteTrackerController::class, 'getLiveUpdates'])->name('resident.monitoring.live-updates');
+        Route::post('/monitoring/station-log/{log}/update-status', [ResidentWasteTrackerController::class, 'updateStationStatus'])->name('resident.monitoring.update-station-status');
 
         // Scheduling and Monitoring
         Route::get('/profile', [ResidentProfileController::class, 'index'])->name('resident.profile');

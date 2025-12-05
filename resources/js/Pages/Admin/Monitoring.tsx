@@ -1,6 +1,6 @@
 import Layout from '@/Pages/Layout/Layout';
 import { Head } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import Map from '../Components/Map';
 import Title from '../Components/Title';
@@ -151,10 +151,66 @@ const formatScheduleDate = (dateString: string | null): string => {
 };
 
 const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
-    const [schedules, setSchedules] = useState<Schedule[]>(activeSchedules);
+    // Patch: When a schedule is completed, force all stations to completed and progress to 100%
+    const patchCompletedSchedules = (schedules: Schedule[]): Schedule[] => {
+        return schedules.map(schedule => {
+            if (schedule.status === 'completed' || schedule.status === 'success') {
+                return {
+                    ...schedule,
+                    status: 'completed', // Normalize 'success' to 'completed'
+                    progress_percentage: 100, // Force 100%
+                    stations: schedule.stations.map(station => ({
+                        ...station,
+                        status: 'completed', // Force ALL stations to completed
+                        completed_at: station.completed_at || station.arrived_at || new Date().toISOString(), // Ensure completion time
+                    })),
+                    current_station: schedule.stations.length > 0
+                        ? schedule.stations[schedule.stations.length - 1].name
+                        : 'Route Completed',
+                };
+            }
+            return schedule;
+        });
+    };;
+
+    const [schedules, setSchedules] = useState<Schedule[]>(patchCompletedSchedules(activeSchedules));
     const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
     const [lastUpdate, setLastUpdate] = useState<string>(new Date().toISOString());
     const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
+
+    // Define refreshData early so it can be used in other effects
+    const refreshData = useCallback((scheduleIdToUpdate?: number) => {
+        fetch('/admin/monitoring/live-updates')
+            .then(response => response.json())
+            .then(data => {
+                const patchedSchedules = patchCompletedSchedules(data.schedules);
+                setSchedules(patchedSchedules);
+                setLastUpdate(data.last_updated);
+
+                // Update selected schedule if it exists in the new data
+                setSelectedSchedule(prev => {
+                    if (!prev) return null;
+                    const updatedSchedule = patchedSchedules.find((s: Schedule) => s.id === prev.id);
+                    return updatedSchedule || prev;
+                });
+            })
+            .catch(error => console.error('Failed to fetch updates:', error));
+    }, []);
+
+    useEffect(() => {
+        if (selectedSchedule && selectedSchedule.status === 'completed') {
+            // Force refresh data when schedule is completed
+            refreshData();
+
+            // Force update stations to completed in local state
+            setSchedules(prev => prev.map(s => {
+                if (s.id === selectedSchedule.id) {
+                    return patchCompletedSchedules([s])[0];
+                }
+                return s;
+            }));
+        }
+    }, [selectedSchedule?.status])
 
     // Set selected schedule from localStorage or default to first schedule
     useEffect(() => {
@@ -184,8 +240,13 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
 
     // Handle schedule change with localStorage persistence
     const handleScheduleChange = (schedule: Schedule | null) => {
-        setSelectedSchedule(schedule);
-        // The useEffect above will automatically save to localStorage
+        if (schedule?.status === 'completed') {
+            // Apply completion patch before setting
+            const patchedSchedule = patchCompletedSchedules([schedule])[0];
+            setSelectedSchedule(patchedSchedule);
+        } else {
+            setSelectedSchedule(schedule);
+        }
     };
 
     // Auto-refresh data every 30 seconds
@@ -193,28 +254,14 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
         if (!autoRefresh) return;
 
         const interval = setInterval(() => {
-            fetch('/admin/monitoring/live-updates')
-                .then(response => response.json())
-                .then(data => {
-                    setSchedules(data.schedules);
-                    setLastUpdate(data.last_updated);
-
-                    // Update selected schedule if it exists in the new data
-                    if (selectedSchedule) {
-                        const updatedSelectedSchedule = data.schedules.find((s: Schedule) => s.id === selectedSchedule.id);
-                        if (updatedSelectedSchedule) {
-                            setSelectedSchedule(updatedSelectedSchedule);
-                        }
-                    }
-                })
-                .catch(error => console.error('Failed to fetch updates:', error));
+            refreshData();
         }, 30000);
 
         return () => clearInterval(interval);
-    }, [autoRefresh, selectedSchedule]);
+    }, [autoRefresh, refreshData]);
 
     // Get current active station for each schedule - Same logic as CollectionTracker
-    const getCurrentActiveStation = (schedule: Schedule) => {
+    const getCurrentActiveStation = useCallback((schedule: Schedule) => {
         if (!schedule.stations) return null;
 
         const stations = schedule.stations.sort((a, b) => a.order - b.order);
@@ -240,83 +287,78 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
         }
 
         return null;
-    };
+    }, []);
 
-    // Prepare map markers for all active schedules with Truck SVG for current stations
-    const mapMarkers = schedules.flatMap(schedule => {
-        if (!schedule.stations) return [];
+    // Prepare map markers for selected schedule only
+    const mapMarkers = selectedSchedule && selectedSchedule.stations ? selectedSchedule.stations.map(station => {
+        const currentActiveStation = getCurrentActiveStation(selectedSchedule);
+        const isCurrentActiveStation = currentActiveStation?.id === station.id;
+        const isLastStation = station.order === Math.max(...selectedSchedule.stations.map(s => s.order));
 
-        const currentActiveStation = getCurrentActiveStation(schedule);
-
-        return schedule.stations.map(station => {
-            const isCurrentActiveStation = currentActiveStation?.id === station.id;
-            const isLastStation = station.order === Math.max(...schedule.stations.map(s => s.order));
-
-            return {
-                id: `${schedule.id}-${station.id}`,
-                position: [station.latitude, station.longitude] as [number, number],
-                popup: (
-                    <div className="p-3 min-w-[280px] bg-white rounded-lg shadow-lg border">
-                        <div className="flex items-center gap-3 mb-2">
-                            {isCurrentActiveStation ? (
-                                <div className="text-blue-500 flex-shrink-0">
-                                    <TruckIcon size={32} />
-                                </div>
-                            ) : (
-                                <div className="w-4 h-4 rounded-full flex-shrink-0" style={{
-                                    backgroundColor: getStatusColor(station.status)
-                                }}></div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                                <strong className="text-sm font-semibold text-gray-900 block">{station.name}</strong>
-                                {isCurrentActiveStation && (
-                                    <span className="text-xs text-blue-600 font-medium">
-                                        {isLastStation ? '🏁 Final Station' : '🚛 Collection Truck'}
-                                    </span>
-                                )}
+        return {
+            id: `${selectedSchedule.id}-${station.id}`,
+            position: [station.latitude, station.longitude] as [number, number],
+            popup: (
+                <div className="p-3 min-w-[280px] bg-white rounded-lg shadow-lg border">
+                    <div className="flex items-center gap-3 mb-2">
+                        {isCurrentActiveStation ? (
+                            <div className="text-blue-500 flex-shrink-0">
+                                <TruckIcon size={32} />
                             </div>
-                        </div>
-                        <div className="flex items-center gap-2 mb-3">
-                            <StatusBadge status={station.status} />
-                        </div>
-                        <div className="space-y-1.5 text-xs text-gray-600">
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-600">Driver:</span>
-                                <span className="font-medium">{schedule.driver_name}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-600">Route:</span>
-                                <span className="font-medium">{schedule.route_name}</span>
-                            </div>
-                            {station.arrived_at && (
-                                <div className="flex items-center gap-2">
-                                    <span className="w-4">🟢</span>
-                                    <span>Arrived: {new Date(station.arrived_at).toLocaleTimeString()}</span>
-                                </div>
-                            )}
-                            {station.completed_at && (
-                                <div className="flex items-center gap-2">
-                                    <span className="w-4">✅</span>
-                                    <span>Completed: {new Date(station.completed_at).toLocaleTimeString()}</span>
-                                </div>
-                            )}
-                            {station.departed_at && (
-                                <div className="flex items-center gap-2">
-                                    <span className="w-4">🚗</span>
-                                    <span>Departed: {new Date(station.departed_at).toLocaleTimeString()}</span>
-                                </div>
+                        ) : (
+                            <div className="w-4 h-4 rounded-full flex-shrink-0" style={{
+                                backgroundColor: getStatusColor(station.status)
+                            }}></div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <strong className="text-sm font-semibold text-gray-900 block">{station.name}</strong>
+                            {isCurrentActiveStation && (
+                                <span className="text-xs text-blue-600 font-medium">
+                                    {isLastStation ? '🏁 Final Station' : '🚛 Collection Truck'}
+                                </span>
                             )}
                         </div>
                     </div>
-                ),
-                color: getStatusColor(station.status),
-                useCircle: !isCurrentActiveStation,
-                useSvgIcon: isCurrentActiveStation,
-                svgIcon: isCurrentActiveStation ? <TruckIcon size={40} /> : undefined,
-                radius: isCurrentActiveStation ? 80 : 8,
-            };
-        });
-    });
+                    <div className="flex items-center gap-2 mb-3">
+                        <StatusBadge status={station.status} />
+                    </div>
+                    <div className="space-y-1.5 text-xs text-gray-600">
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Driver:</span>
+                            <span className="font-medium">{selectedSchedule.driver_name}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-600">Route:</span>
+                            <span className="font-medium">{selectedSchedule.route_name}</span>
+                        </div>
+                        {station.arrived_at && (
+                            <div className="flex items-center gap-2">
+                                <span className="w-4">🟢</span>
+                                <span>Arrived: {new Date(station.arrived_at).toLocaleTimeString()}</span>
+                            </div>
+                        )}
+                        {station.completed_at && (
+                            <div className="flex items-center gap-2">
+                                <span className="w-4">✅</span>
+                                <span>Completed: {new Date(station.completed_at).toLocaleTimeString()}</span>
+                            </div>
+                        )}
+                        {station.departed_at && (
+                            <div className="flex items-center gap-2">
+                                <span className="w-4">🚗</span>
+                                <span>Departed: {new Date(station.departed_at).toLocaleTimeString()}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ),
+            color: getStatusColor(station.status),
+            useCircle: !isCurrentActiveStation,
+            useSvgIcon: isCurrentActiveStation,
+            svgIcon: isCurrentActiveStation ? <TruckIcon size={40} /> : undefined,
+            radius: isCurrentActiveStation ? 80 : 8,
+        };
+    }) : [];
 
     // Prepare route paths for selected schedule
     const routePath = selectedSchedule?.stations
@@ -334,97 +376,136 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
         return `${Math.floor(diffInSeconds / 86400)}d ago`;
     };
 
-    const refreshData = () => {
-        fetch('/admin/monitoring/live-updates')
-            .then(response => response.json())
-            .then(data => {
-                setSchedules(data.schedules);
-                setLastUpdate(data.last_updated);
-
-                // Update selected schedule if it exists in the new data
-                if (selectedSchedule) {
-                    const updatedSelectedSchedule = data.schedules.find((s: Schedule) => s.id === selectedSchedule.id);
-                    if (updatedSelectedSchedule) {
-                        setSelectedSchedule(updatedSelectedSchedule);
-                    }
-                }
-            })
-            .catch(error => console.error('Failed to fetch updates:', error));
-    };
-
-    // Real-time listeners via Laravel Echo (reverb)
+    // Real-time listeners via Laravel Echo - Setup once on mount
     useEffect(() => {
+        console.log('Setting up Echo listeners...');
         const echo = (window as any).Echo;
-        if (!echo || !drivers || drivers.length === 0) return;
 
-        const subscriptions: Array<any> = [];
+        if (!echo) {
+            console.error('Echo is not available on window object');
+            console.log('Make sure Echo is initialized in your app.tsx/bootstrap.js');
+            return;
+        }
 
-        drivers.forEach(driver => {
-            try {
-                const channel = echo.channel(`driver.${driver.id}`);
+        console.log('Echo found, broadcaster:', echo.connector?.options?.broadcaster);
 
-                const handleStationUpdate = (payload: any) => {
-                    if (!payload || !payload.schedule_id || !payload.station) return;
+        // Clean up any existing listeners first
+        try {
+            echo.leave('monitoring');
+            console.log('Left previous monitoring channel');
+        } catch (e) {
+            console.log('No previous monitoring channel to leave');
+        }
 
-                    setSchedules(prev => prev.map(s => {
-                        if (s.id !== payload.schedule_id) return s;
-                        const updatedStations = s.stations.map(st => st.id === payload.station.id ? { ...st, ...payload.station } : st);
-                        return { ...s, stations: updatedStations, last_updated: new Date().toISOString() };
-                    }));
+        // Subscribe to global monitoring channel
+        const channel = echo.channel('monitoring');
+        console.log('Channel created');
 
-                    if (selectedSchedule && selectedSchedule.id === payload.schedule_id) {
-                        setSelectedSchedule(prev => prev ? { ...prev, stations: prev.stations.map(st => st.id === payload.station.id ? { ...st, ...payload.station } : st) } : prev);
-                    }
-                };
+        const handleScheduleUpdate = (payload: any) => {
+            console.log('Schedule update received:', payload);
 
-                const handleScheduleUpdate = (payload: any) => {
-                    if (!payload || !payload.id) return;
-
-                    // Show toast if schedule is completed
-                    if (payload.status === 'success' || payload.status === 'completed') {
-                        toast.success(`Driver completed route: ${payload.route_name}`);
-                    }
-
-                    setSchedules(prev => {
-                        const exists = prev.some(s => s.id === payload.id);
-                        if (exists) {
-                            return prev.map(s => s.id === payload.id ? { ...s, ...payload, last_updated: new Date().toISOString() } : s);
-                        }
-
-                        // If new schedule (not in list) add it to the front
-                        return [{ ...payload, last_updated: new Date().toISOString() }, ...prev];
-                    });
-
-                    if (selectedSchedule && selectedSchedule.id === payload.id) {
-                        setSelectedSchedule(payload);
-                    }
-                };
-
-                channel.listen('station.updated', handleStationUpdate);
-                channel.listen('.station.updated', handleStationUpdate);
-                channel.listen('schedule.updated', handleScheduleUpdate);
-                channel.listen('.schedule.updated', handleScheduleUpdate);
-
-                subscriptions.push({ channel, handleStationUpdate, handleScheduleUpdate });
-            } catch (err) {
-                console.error('Echo subscribe error for driver', driver.id, err);
+            if (!payload || !payload.id) {
+                console.error('Invalid schedule payload:', payload);
+                return;
             }
-        });
 
-        return () => {
-            subscriptions.forEach(({ channel, handleStationUpdate, handleScheduleUpdate }) => {
-                try {
-                    channel.stopListening('station.updated', handleStationUpdate);
-                    channel.stopListening('.station.updated', handleStationUpdate);
-                    channel.stopListening('schedule.updated', handleScheduleUpdate);
-                    channel.stopListening('.schedule.updated', handleScheduleUpdate);
-                    channel.unsubscribe();
-                } catch (e) {
-                    // ignore cleanup errors
+            // Show toast if schedule is completed or success
+            if (payload.status === 'completed' || payload.status === 'success') {
+                toast.success(`Driver completed route: ${payload.route_name}`);
+            }
+
+            // Apply the completed schedule patch
+            const patchedPayload = patchCompletedSchedules([payload])[0];
+
+            setSchedules(prev => {
+                const exists = prev.some(s => s.id === payload.id);
+
+                if (exists) {
+                    const updated = patchCompletedSchedules(
+                        prev.map(s => s.id === payload.id ? patchedPayload : s)
+                    );
+                    return updated;
                 }
+
+                const newSchedules = patchCompletedSchedules([patchedPayload, ...prev]);
+                return newSchedules;
+            });
+
+            // Update selected schedule if it matches
+            setSelectedSchedule(prev => {
+                if (prev && prev.id === payload.id) {
+                    console.log('Updating selected schedule:', patchedPayload);
+                    return patchedPayload;
+                }
+                return prev;
             });
         };
-    }, [drivers, selectedSchedule]);
+
+        const handleStationUpdate = (payload: any) => {
+            console.log('Station update received:', payload);
+
+            if (!payload || !payload.schedule_id) {
+                console.error('Invalid station payload:', payload);
+                return;
+            }
+
+            // Update the schedule with new station data
+            setSchedules(prev => prev.map(s => {
+                if (s.id === payload.schedule_id && payload.station) {
+                    return {
+                        ...s,
+                        stations: s.stations.map(st => 
+                            st.id === payload.station.id 
+                                ? { ...st, ...payload.station }
+                                : st
+                        )
+                    };
+                }
+                return s;
+            }));
+
+            // Update selected schedule if it matches
+            setSelectedSchedule(prev => {
+                if (prev && prev.id === payload.schedule_id && payload.station) {
+                    return {
+                        ...prev,
+                        stations: prev.stations.map(st =>
+                            st.id === payload.station.id
+                                ? { ...st, ...payload.station }
+                                : st
+                        )
+                    };
+                }
+                return prev;
+            });
+        };
+
+        // Bind listeners - use the correct event names without dots
+        channel.listen('schedule.updated', handleScheduleUpdate);
+        channel.listen('station.updated', handleStationUpdate);
+
+        console.log('Listeners bound successfully');
+        console.log('Connected to monitoring channel');
+
+        // Cleanup function
+        return () => {
+            console.log('Cleaning up Echo listeners...');
+            try {
+                // For Reverb, we need to use stopListening for each event
+                channel.stopListening('schedule.updated', handleScheduleUpdate);
+                channel.stopListening('station.updated', handleStationUpdate);
+                echo.leave('monitoring');
+                console.log('Echo cleanup complete');
+            } catch (e) {
+                console.error('Error cleaning up Echo listeners:', e);
+            }
+        };
+    }, []);
+
+    // Initial data fetch
+    useEffect(() => {
+        refreshData();
+    }, []);
 
     return (
         <Layout>
@@ -519,15 +600,16 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                         <span>🗺️</span>
                                         Live Route Tracking
                                     </h3>
-                                    <p className="text-sm text-gray-600 mt-1">
+                                    {/* FIXED: Changed from <p> to <div> */}
+                                    <div className="text-sm text-gray-600 mt-1">
                                         <span className="inline-flex items-center gap-1 mr-3">
                                             <TruckIcon size={16} /> Current Station
                                         </span>
                                         <span className="inline-flex items-center gap-1">
-                                            <div className="w-3 h-3 rounded-full bg-gray-500 mr-1"></div>
+                                            <span className="w-3 h-3 rounded-full bg-gray-500 mr-1"></span>
                                             Other Stations
                                         </span>
-                                    </p>
+                                    </div>
                                 </div>
                                 <div className="p-2">
                                     <Map
@@ -549,7 +631,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                         <span>🚛</span>
                                         Active Collections
                                     </h3>
-                                    <p className="text-sm text-gray-600 mt-1">Currently running schedules</p>
+                                    <div className="text-sm text-gray-600 mt-1">Currently running schedules</div>
                                 </div>
 
                                 <div className="p-4">
@@ -575,7 +657,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                                                 </div>
                                                                 <div>
                                                                     <h4 className="font-semibold text-gray-900 text-sm">{schedule.driver_name}</h4>
-                                                                    <p className="text-xs text-gray-600">{schedule.route_name}</p>
+                                                                    <div className="text-xs text-gray-600">{schedule.route_name}</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -672,7 +754,11 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                                                 )}
                                                             </div>
                                                             <div className="mb-2">
-                                                                <StatusBadge status={station.status} />
+                                                                <StatusBadge status={
+                                                                    selectedSchedule.status === 'completed'
+                                                                        ? 'completed'  // Override with completed if schedule is completed
+                                                                        : station.status
+                                                                } />
                                                             </div>
 
                                                             <div className="space-y-1 text-xs text-gray-500">
@@ -702,6 +788,7 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                     </div>
                                 </div>
                             )}
+
                             {/* Recently Completed Card */}
                             {schedules.filter(s => s.status === 'completed').length > 0 && (
                                 <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -720,8 +807,8 @@ const Monitoring: React.FC<Props> = ({ activeSchedules, drivers }) => {
                                                         <div className="text-xs text-gray-600 truncate">{schedule.route_name}</div>
                                                     </div>
                                                     <div className="text-xs text-gray-500 whitespace-nowrap">
-                                                                {schedule.completed_at ? formatScheduleDate(schedule.completed_at) : 'N/A'}
-                                                            </div>
+                                                        {schedule.completed_at ? formatScheduleDate(schedule.completed_at) : 'N/A'}
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>

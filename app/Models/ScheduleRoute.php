@@ -25,23 +25,18 @@ class ScheduleRoute extends Model
         return $this->belongsTo(User::class, 'driver_id');
     }
 
-    // Add this Eloquent relationship
-    public function stationRoutes()
-    {
-        return $this->belongsToMany(StationRoute::class, 'route_station', 'schedule_route_id', 'station_route_id')
-            ->withTimestamps();
-    }
+    // FIXED: Remove the pivot table relationship since you use JSON
+    // public function stationRoutes()
+    // {
+    //     return $this->belongsToMany(StationRoute::class, 'route_station', 'schedule_route_id', 'station_route_id')
+    //         ->withTimestamps();
+    // }
     
-    public function schedules()
-    {
-        return $this->hasMany(Schedule::class, 'schedule_route_id');
-    }
-
-    // Your existing accessor (keep this)
+    // Keep this method instead
     public function getStationRoutesAttribute()
     {
         $stationRouteIds = $this->station_order ?? [];
-        if (empty($stationRouteIds)) {
+        if (empty($stationRouteIds) || !is_array($stationRouteIds)) {
             return collect(); // Always return a collection, never null
         }
 
@@ -51,6 +46,11 @@ class ScheduleRoute extends Model
         return collect($stationRouteIds)->map(function ($id) use ($stations) {
             return $stations->where('id', $id)->first();
         })->filter();
+    }
+    
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class, 'schedule_route_id');
     }
 
     // Accessor for station names

@@ -1,6 +1,6 @@
 import Layout from '@/Pages/Layout/Layout';
 import Title from '@/Pages/Components/Title';
-import { usePage, useForm } from '@inertiajs/react';
+import { usePage, useForm, Head } from '@inertiajs/react';
 import { Button, MenuItem, Select, FormControl } from '@mui/material';
 import { toast } from "sonner";
 import Map from '@/Pages/Components/Map';
@@ -77,7 +77,7 @@ const ScheduleRouteCreate = () => {
     return (
         <Layout>
             <Title title="Create Schedule Route" />
-
+            <Head title='Create Schedule Route'/>
             <div className="w-full bg-gray-100 p-6 rounded-lg">
                 <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
                     <form onSubmit={handleSubmit}>

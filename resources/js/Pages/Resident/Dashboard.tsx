@@ -49,7 +49,7 @@ const Dashboard = () => {
         <Layout>
             <Head title="Dashboard" />
             <Title
-                title={`Welcome back, ${user.name}!`}
+                title={`Welcome ${user.name}!`}
                 subtitle="Here's your dashboard overview"
             />
 

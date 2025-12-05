@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { route } from "ziggy-js";
 import Map, { MapMarker, MANGAGOY_CENTER } from '@/Pages/Components/Map';
 import RoutingMachine from '@/Pages/Components/RoutingMachine';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import scheduleColumnsDriverResident from '../Data/scheduleColumnDriverResident';
 
 interface StationRoute {
@@ -34,6 +34,8 @@ interface Props extends PageProps {
 
 const ScheduleList = ({ schedules }: Props) => {
     const [selectedScheduleIds, setSelectedScheduleIds] = useState<number[]>([]);
+    const [currentMapPage, setCurrentMapPage] = useState<number>(1);
+    const [itemsPerMapPage, setItemsPerMapPage] = useState<number>(8);
 
     // Toggle schedule selection for map view
     const toggleScheduleSelection = (scheduleId: number) => {
@@ -76,8 +78,21 @@ const ScheduleList = ({ schedules }: Props) => {
         station_routes: schedule.station_routes || []
     }));
 
+    // Get paginated schedules for map view
+    const paginatedSchedules = useMemo(() => {
+        const startIndex = (currentMapPage - 1) * itemsPerMapPage;
+        const endIndex = startIndex + itemsPerMapPage;
+        return filteredSchedules.slice(startIndex, endIndex);
+    }, [filteredSchedules, currentMapPage, itemsPerMapPage]);
+
+    // Calculate total pages for map view
+    const totalMapPages = useMemo(() => {
+        return Math.ceil(filteredSchedules.length / itemsPerMapPage);
+    }, [filteredSchedules.length, itemsPerMapPage]);
+
+    // Create markers for paginated schedules only
     const allStations = useMemo(() =>
-        filteredSchedules.flatMap(schedule =>
+        paginatedSchedules.flatMap(schedule =>
             schedule.station_routes?.map(station => ({
                 ...station,
                 route_name: schedule.route_name,
@@ -86,7 +101,7 @@ const ScheduleList = ({ schedules }: Props) => {
                 schedule_time: schedule.time
             })) || []
         ),
-        [filteredSchedules]
+        [paginatedSchedules]
     );
 
     const markers: MapMarker[] = allStations.map((station, index) => ({
@@ -110,9 +125,9 @@ const ScheduleList = ({ schedules }: Props) => {
         radius: 8,
     }));
 
-    // Create route data for RoutingMachine components (filtered)
+    // Create route data for RoutingMachine components (paginated)
     const routesWithStations = useMemo(() =>
-        filteredSchedules
+        paginatedSchedules
             .filter(schedule => schedule.station_routes && schedule.station_routes.length > 1)
             .map((schedule, index) => {
                 const waypoints = schedule.station_routes!.map(station =>
@@ -127,13 +142,13 @@ const ScheduleList = ({ schedules }: Props) => {
                     isSelected: selectedScheduleIds.length === 0 || selectedScheduleIds.includes(schedule.id)
                 };
             }),
-        [filteredSchedules, selectedScheduleIds]
+        [paginatedSchedules, selectedScheduleIds]
     );
 
-    // Get all schedules with stations for the legend
-    const allSchedulesWithStations = useMemo(() =>
-        schedules
-            .filter(schedule => schedule.station_routes && schedule.station_routes.length > 1)
+    // Get paginated schedules with stations for the legend (only current page)
+    const paginatedSchedulesWithStations = useMemo(() =>
+        paginatedSchedules
+            .filter(schedule => schedule.station_routes && schedule.station_routes.length > 0)
             .map((schedule, index) => ({
                 id: schedule.id,
                 route_name: schedule.route_name,
@@ -142,8 +157,26 @@ const ScheduleList = ({ schedules }: Props) => {
                 color: '#3b82f6',
                 isSelected: selectedScheduleIds.length === 0 || selectedScheduleIds.includes(schedule.id)
             })),
-        [schedules, selectedScheduleIds]
+        [paginatedSchedules, selectedScheduleIds]
     );
+
+    // Count schedules with stations
+    const schedulesWithStationsCount = schedules.filter(s => s.station_routes && s.station_routes.length > 0).length;
+
+    // Handle page change
+    const handlePageChange = (page: number) => {
+        setCurrentMapPage(page);
+        // Scroll to map section for better UX
+        const mapSection = document.getElementById('map-section');
+        if (mapSection) {
+            mapSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentMapPage(1);
+    }, [selectedScheduleIds]);
 
     return (
         <LayoutDriver>
@@ -163,18 +196,76 @@ const ScheduleList = ({ schedules }: Props) => {
                 </div>
             </div>
 
-            {/* Map View - Only show if there are stations */}
-            {allStations.length > 0 && (
-                <div className="w-full bg-gray-100 p-6 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2">Schedules Map View</h3>
-                    <p className='text-sm mb-4 text-gray-600'>
-                        Click any schedule to filter the map view. Select multiple schedules or click "Show All" to reset.
-                    </p>
+            {/* Map View - Only show if there are stations in any schedule */}
+            {schedulesWithStationsCount > 0 && (
+                <div id="map-section" className="w-full bg-gray-100 p-6 rounded-lg">
+                    <div className="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 className="text-lg font-semibold">Schedules Map View</h3>
+                            <p className='text-sm text-gray-600'>
+                                Showing {paginatedSchedules.length} schedules (page {currentMapPage} of {totalMapPages}) 
+                                {selectedScheduleIds.length > 0 && ` | Filtered: ${selectedScheduleIds.length}`}
+                            </p>
+                        </div>
+                        
+                        {/* Map Pagination Controls */}
+                        {totalMapPages > 1 && (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => handlePageChange(currentMapPage - 1)}
+                                    disabled={currentMapPage === 1}
+                                    className={`px-3 py-1 rounded border ${currentMapPage === 1 
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                        : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    Previous
+                                </button>
+                                
+                                <div className="flex items-center gap-1">
+                                    {Array.from({ length: Math.min(5, totalMapPages) }, (_, i) => {
+                                        // Show page numbers with ellipsis
+                                        let pageNum;
+                                        if (totalMapPages <= 5) {
+                                            pageNum = i + 1;
+                                        } else if (currentMapPage <= 3) {
+                                            pageNum = i + 1;
+                                        } else if (currentMapPage >= totalMapPages - 2) {
+                                            pageNum = totalMapPages - 4 + i;
+                                        } else {
+                                            pageNum = currentMapPage - 2 + i;
+                                        }
+                                        
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => handlePageChange(pageNum)}
+                                                className={`w-8 h-8 rounded ${currentMapPage === pageNum 
+                                                    ? 'bg-blue-600 text-white' 
+                                                    : 'bg-white text-gray-700 hover:bg-gray-100 border'}`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                
+                                <button
+                                    onClick={() => handlePageChange(currentMapPage + 1)}
+                                    disabled={currentMapPage === totalMapPages}
+                                    className={`px-3 py-1 rounded border ${currentMapPage === totalMapPages 
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                        : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
-                    {/* Interactive Schedule Legend */}
-                    {allSchedulesWithStations.length > 0 && (
+                    {/* Interactive Schedule Legend - ONLY PAGINATED SCHEDULES */}
+                    {paginatedSchedulesWithStations.length > 0 && (
                         <div className="mb-4 flex flex-wrap gap-3">
-                            {allSchedulesWithStations.map((schedule) => (
+                            {paginatedSchedulesWithStations.map((schedule) => (
                                 <button
                                     key={schedule.id}
                                     onClick={() => toggleScheduleSelection(schedule.id)}
@@ -220,29 +311,66 @@ const ScheduleList = ({ schedules }: Props) => {
                         </div>
                     )}
 
-                    <div className="flex w-full items-center justify-center">
-                        <Map
-                            center={MANGAGOY_CENTER}
-                            zoom={12}
-                            markers={markers}
-                            style={{ height: 600 }}
-                        >
-                            {/* Add RoutingMachine components for each filtered route */}
-                            {routesWithStations.map((route) => (
-                                <RoutingMachine
-                                    key={route.id}
-                                    waypoints={route.waypoints}
-                                    color={route.color}
-                                    weight={3}
-                                />
-                            ))}
-                        </Map>
-                    </div>
+                    {/* Map Display - Only show if current page has stations */}
+                    {allStations.length > 0 ? (
+                        <div className="flex w-full items-center justify-center">
+                            <Map
+                                center={MANGAGOY_CENTER}
+                                zoom={12}
+                                markers={markers}
+                                style={{ height: 600 }}
+                            >
+                                {/* Add RoutingMachine components for each paginated route */}
+                                {routesWithStations.map((route) => (
+                                    <RoutingMachine
+                                        key={route.id}
+                                        waypoints={route.waypoints}
+                                        color={route.color}
+                                        weight={3}
+                                    />
+                                ))}
+                            </Map>
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <svg className="mx-auto h-12 w-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h3 className="mt-4 text-lg font-medium text-yellow-800">No Stations on This Page</h3>
+                            <p className="mt-2 text-yellow-700">The schedules on this page don't have route stations.</p>
+                            <p className="mt-1 text-sm text-yellow-600">Try the next page or select different schedules.</p>
+                        </div>
+                    )}
+
+                    {/* Map Pagination Footer */}
+                    {totalMapPages > 1 && (
+                        <div className="mt-4 flex justify-between items-center">
+                            <div className="text-sm text-gray-600">
+                                Showing {paginatedSchedules.length} of {filteredSchedules.length} schedules on map
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-600">Items per page:</span>
+                                <select
+                                    value={itemsPerMapPage}
+                                    onChange={(e) => {
+                                        setItemsPerMapPage(Number(e.target.value));
+                                        setCurrentMapPage(1); // Reset to first page
+                                    }}
+                                    className="border rounded px-2 py-1 text-sm"
+                                >
+                                    <option value={4}>4</option>
+                                    <option value={8}>8</option>
+                                    <option value={12}>12</option>
+                                    <option value={16}>16</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* No Stations Warning */}
-            {allStations.length === 0 && schedules.length > 0 && (
+            {/* No Stations Warning - Only show if NO schedules have stations at all */}
+            {schedulesWithStationsCount === 0 && schedules.length > 0 && (
                 <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
                     <div className="flex items-center">
                         <svg className="w-6 h-6 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -108,11 +108,19 @@ const UserCreate = () => {
                             <FormInput
                                 id="phone_number"
                                 type="text"
-                                placeholder="09xxxxxxxxx"
+                                placeholder="639XXXXXXXXX"
                                 value={data.phone_number}
-                                onChange={(e) => setData('phone_number', e.target.value)}
+                                onChange={(e) => {
+                                    // Allow only numbers and limit to 11 characters
+                                    const value = e.target.value.replace(/[^0-9]/g, '');
+                                    if (value.length <= 12) {
+                                        setData('phone_number', value);
+                                    }
+                                }}
                                 message={errors.phone_number}
                                 required
+                                maxLength={11}
+                                pattern="[0-9]{11}"  // HTML5 validation pattern
                                 className="w-full"
                             />
                         </FormInputField>

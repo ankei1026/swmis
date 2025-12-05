@@ -4,7 +4,6 @@ import React from 'react';
 import AppBar from './Appbar/Appbar';
 import { Drawer } from './Drawer/Drawer';
 import { DrawerHeader } from './Drawer/DrawerHeader';
-import Title from '../Components/Title';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -15,7 +14,7 @@ const Layout = ({ title, children }: LayoutProps) => {
 
     return (
         <Box sx={{ display: 'flex' }}>
-            <Title title={title}/>
+            <meta name="csrf-token" content={document.querySelector('meta[name="csrf-token"]')?.content || ''} />
             <CssBaseline />
             <AppBar open={open} title={title} onOpen={() => setOpen(true)} />
             <Drawer open={open} onClose={() => setOpen(false)} />

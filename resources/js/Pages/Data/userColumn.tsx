@@ -42,7 +42,7 @@ const handleDelete = (id: number) => {
 
 // ✅ Proper DataGrid column definitions
 const userColumns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 70, flex: 1, headerAlign: 'center', align: 'center' },
+    // { field: 'id', headerName: 'ID', width: 70, flex: 1, headerAlign: 'center', align: 'center' },
     { field: 'name', headerName: 'Name', width: 150, flex: 1 },
     { field: 'email', headerName: 'Email', width: 200, flex: 1 },
     { field: 'phone', headerName: 'Phone Number', width: 160, flex: 1 },

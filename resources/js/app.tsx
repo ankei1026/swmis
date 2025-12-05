@@ -4,14 +4,12 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { Toaster } from 'sonner'; // ✅ import Sonner toaster
+import { Toaster } from 'sonner';
 import "leaflet/dist/leaflet.css";
-import { configureEcho } from '@laravel/echo-react';
+import { initializeEcho } from './echo';
 
-configureEcho({
-    broadcaster: 'reverb',
-});
-
+// Initialize Echo
+initializeEcho();
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -23,7 +21,6 @@ createInertiaApp({
         createRoot(el).render(
             <>
                 <App {...props} />
-                {/* ✅ Add the Toaster globally here */}
                 <Toaster
                     position="top-right"
                     richColors

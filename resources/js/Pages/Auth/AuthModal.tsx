@@ -87,9 +87,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                         {/* Image Section - Left Side */}
                         <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-green-50 to-blue-50 items-center justify-center p-8">
                             <div className="text-center">
-                                <img 
-                                    src="/assets/Solid Waste.png" 
-                                    alt="Solid Waste Management" 
+                                <img
+                                    src="/assets/Solid Waste.png"
+                                    alt="Solid Waste Management"
                                     className="w-full max-w-xs h-auto mx-auto mb-6 rounded-lg"
                                 />
                                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -215,12 +215,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                                             <FormInput
                                                 id="phone_number"
                                                 type="tel"
-                                                placeholder="09xxxxxxxxx"
+                                                placeholder="639XXXXXXXXX"
                                                 value={registerForm.data.phone_number}
-                                                onChange={(e) => registerForm.setData('phone_number', e.target.value)}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    // Allow only numbers and limit to 12 characters
+                                                    const digitsOnly = value.replace(/[^0-9]/g, '');
+                                                    if (digitsOnly.length <= 12) {
+                                                        registerForm.setData('phone_number', digitsOnly);
+                                                    }
+                                                }}
                                                 onFocus={(e) => (e.target as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
                                                 message={registerForm.errors.phone_number}
                                                 required
+                                                maxLength={12}  // Changed to 12
+                                                pattern="639[0-9]{9}"  // Pattern for 639 format
                                                 className="w-full"
                                             />
                                         </FormInputField>

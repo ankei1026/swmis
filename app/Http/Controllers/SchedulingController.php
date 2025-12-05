@@ -115,8 +115,11 @@ class SchedulingController extends Controller
                     ->with('error', 'Failed to create schedule.');
             }
 
-            $residents = User::where('role', 'resident')->get();
-
+            $residents = User::where([
+                'role' => 'resident',
+                'status' => 'verified'
+            ])->get();
+            
             $message =
                 "SWMIS COLLECTION SCHEDULE\n" .
                 "Date: {$schedule->date} at {$schedule->time}\n" .

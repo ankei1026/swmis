@@ -302,35 +302,70 @@ const Complaint = () => {
             </FormInputField>
 
             <FormInputField>
-              <FormLabel htmlFor="description" textLabel="Description" />
+              <div className="flex justify-between items-center mb-1">
+                <FormLabel htmlFor="description" textLabel="Description" />
+                <span className={`text-sm ${data.description.length > 60 ? 'text-red-500' : 'text-gray-500'}`}>
+                  {data.description.length}/60
+                </span>
+              </div>
               <TextField
                 id="description"
                 multiline
                 rows={4}
                 placeholder="Describe your complaint here..."
                 value={data.description}
-                onChange={(e) => setData('description', e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.length <= 60) {
+                    setData('description', e.target.value);
+                  }
+                }}
                 fullWidth
                 size="small"
-                error={!!errors.description}
-                helperText={errors.description}
+                error={!!errors.description || data.description.length > 60}
+                helperText={errors.description || (data.description.length > 60 ? 'Maximum 60 characters allowed' : '')}
                 disabled={processing || !isVerified}
+                inputProps={{ maxLength: 60 }} // HTML attribute backup
               />
             </FormInputField>
-
             <FormInputField className="w-full">
               <FormLabel htmlFor="photo" textLabel="Upload Photo (Optional)" />
               <input
                 id="photo"
                 type="file"
-                accept="image/*"
-                onChange={(e) => setData('photo', e.target.files?.[0] || null)}
+                accept=".jpg,.jpeg,.png,.gif,.bmp,.webp"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    // Validate file type
+                    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/bmp', 'image/webp'];
+
+                    if (!allowedTypes.includes(file.type)) {
+                      alert('Please select a valid image file (JPG, PNG, JPEG, GIF, BMP, or WebP).');
+                      e.target.value = '';
+                      setData('photo', null);
+                      return;
+                    }
+
+                    // Validate file size (2MB = 2 * 1024 * 1024 bytes)
+                    const maxSize = 2 * 1024 * 1024;
+                    if (file.size > maxSize) {
+                      alert('File size must be less than 2MB.');
+                      e.target.value = '';
+                      setData('photo', null);
+                      return;
+                    }
+
+                    setData('photo', file);
+                  } else {
+                    setData('photo', null);
+                  }
+                }}
                 className="w-full border border-gray-300 rounded-md p-2 text-sm"
                 disabled={processing || !isVerified}
               />
               {errors.photo && <p className="mt-1 text-sm text-red-500">{errors.photo}</p>}
               <p className="text-xs text-gray-500 mt-1">
-                Accepted formats: JPG, PNG, JPEG (Max: 2MB)
+                Accepted formats: JPG, PNG, JPEG, GIF, BMP, WebP (Max: 2MB)
               </p>
             </FormInputField>
 

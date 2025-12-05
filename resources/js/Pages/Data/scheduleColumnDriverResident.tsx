@@ -10,6 +10,8 @@ const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
         case 'pending':
             return 'primary';
+        case 'completed':
+            return 'success';
         case 'success':
             return 'success';
         case 'ongoing':
@@ -133,13 +135,37 @@ const scheduleColumnsDriverResident: GridColDef[] = [
         flex: 1,
         renderCell: (params) => (
             <Chip
-                label={params.value ? params.value.charAt(0).toUpperCase() + params.value.slice(1) : 'Unknown'}
+                label={(params.value || '').toString().toLowerCase() === 'completed' ? 'Success' : (params.value || '').toString().charAt(0).toUpperCase() + (params.value || '').toString().slice(1)}
                 size="small"
-                color={getStatusColor(params.value) as any}
+                color={getStatusColor((params.value || '').toString()) as any}
                 variant="filled"
             />
         ),
     },
+    // Optional: Add action buttons if needed (Edit/Delete)
+    // {
+    //     field: 'actions',
+    //     headerName: 'Actions',
+    //     width: 120,
+    //     align: 'center',
+    //     headerAlign: 'center',
+    //     sortable: false,
+    //     filterable: false,
+    //     renderCell: (params) => (
+    //         <div className="flex gap-1">
+    //             <Tooltip title="Edit">
+    //                 <IconButton size="small" color="primary">
+    //                     <EditIcon fontSize="small" />
+    //                 </IconButton>
+    //             </Tooltip>
+    //             <Tooltip title="Delete">
+    //                 <IconButton size="small" color="error">
+    //                     <DeleteIcon fontSize="small" />
+    //                 </IconButton>
+    //             </Tooltip>
+    //         </div>
+    //     ),
+    // },
 ];
 
 export default scheduleColumnsDriverResident;

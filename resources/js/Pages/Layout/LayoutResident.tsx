@@ -13,7 +13,9 @@ const LayoutResident = ({ title, children }: LayoutResidentProps) => {
     const [open, setOpen] = React.useState(true);
 
     return (
+
         <Box sx={{ display: 'flex' }}>
+            <meta name="csrf-token" content={document.querySelector('meta[name="csrf-token"]')?.content || ''} />
             <CssBaseline />
             <AppBar open={open} title={title} onOpen={() => setOpen(true)} />
             <DrawerResident open={open} onClose={() => setOpen(false)} />

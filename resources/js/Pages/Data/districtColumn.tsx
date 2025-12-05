@@ -42,23 +42,22 @@ const handleDelete = (id: number) => {
 
 // ✅ Proper DataGrid column definitions
 const districtColumns: GridColDef[] = [
-    {
-        field: 'id',
-        headerName: 'ID',
-        width: 70,
-        headerAlign: 'center',
-        align: 'center'
-    },
+    // {
+    //     field: 'id',
+    //     headerName: 'ID',
+    //     width: 70,
+    //     headerAlign: 'center',
+    //     align: 'center'
+    // },
     {
         field: 'name',
         headerName: 'Name',
-        width: 150,
         flex: 1
     },
     {
         field: 'actions',
         headerName: 'Actions',
-        width: 130,
+        flex: 1,
         align: 'center',
         headerAlign: 'center',
         sortable: false,

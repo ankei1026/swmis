@@ -10,6 +10,7 @@ use App\Models\StationRoute;
 use Illuminate\Support\Facades\Auth;
 use App\Events\StationStatusUpdated;
 use App\Events\ScheduleStatusUpdated;
+use App\Events\ScheduleUpdated;
 
 class WasteTrackerDriverController extends Controller
 {
@@ -146,8 +147,10 @@ class WasteTrackerDriverController extends Controller
         $this->checkScheduleCompletion($schedule);
 
         // Broadcast station update and schedule update for real-time viewers
-        event(new StationStatusUpdated($schedule->id, $station, $schedule->driver_id));
+        broadcast(new StationStatusUpdated($schedule->id, $station, $schedule->driver_id));
         event(new ScheduleStatusUpdated($schedule));
+
+        broadcast(new ScheduleUpdated($schedule->fresh()));
 
         return redirect()->route('driver.collection-tracker');
     }
@@ -160,9 +163,9 @@ class WasteTrackerDriverController extends Controller
             return back()->with('error', 'Schedule is not in progress.');
         }
 
-        // Update the schedule status to 'success' instead of 'completed'
+        // Update the schedule status to 'completed'
         $schedule->update([
-            'status' => 'success', // Changed from 'completed' to 'success'
+            'status' => 'completed',
             'completed_at' => now(),
         ]);
 
@@ -234,12 +237,12 @@ class WasteTrackerDriverController extends Controller
             // If all stations are completed (not just all are completed/failed), mark as completed
             if ($completedStations === $totalStations) {
                 $schedule->update([
-                    'status' => 'success',
+                    'status' => 'completed',
                     'completed_at' => now(),
                 ]);
 
                 // Broadcast schedule completion
-                event(new ScheduleStatusUpdated($schedule));
+                event(new ScheduleStatusUpdated($schedule->fresh()));
             } else {
                 // If some stations failed, mark as failed
                 $schedule->update([

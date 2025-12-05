@@ -20,6 +20,8 @@ class ResidentController extends Controller
         // Get basic collection statistics
         $totalCollections = Schedule::count();
         $totalSuccess = Schedule::where('status', 'success')->count();
+        // Combined count for statuses 'success' and 'completed'
+        $totalNewSuccess = Schedule::whereIn('status', ['success', 'completed'])->count();
         $totalFailed = Schedule::where('status', 'failed')->count();
         $totalOngoing = Schedule::where('status', 'in_progress')->count();
         $totalPending = Schedule::where('status', 'pending')->count();
@@ -39,7 +41,8 @@ class ResidentController extends Controller
         $weeklyData = collect();
         foreach (range(0, 6) as $i) {
             $day = $startDate->copy()->addDays($i);
-            $success = $schedules->where('date', $day->toDateString())->where('status', 'success')->count();
+            // Count both 'success' and 'completed' as successful runs
+            $success = $schedules->where('date', $day->toDateString())->whereIn('status', ['success', 'completed'])->count();
             $failed = $schedules->where('date', $day->toDateString())->where('status', 'failed')->count();
 
             $weeklyData->push([
@@ -72,6 +75,9 @@ class ResidentController extends Controller
                 'role' => $user->role,
                 'status' => $user->status
             ]
+            ,
+            // New combined success + completed count
+            'totalNewSuccess' => $totalNewSuccess,
         ]);
     }
 
@@ -80,7 +86,8 @@ class ResidentController extends Controller
      */
     private function getSuccessCountsByRoute()
     {
-        $successfulSchedules = Schedule::where('status', 'success')
+        // Consider both 'success' and the new 'completed' status as successful
+        $successfulSchedules = Schedule::whereIn('status', ['success', 'completed'])
             ->where('completed_at', '>=', Carbon::now()->subDays(7))
             ->with('scheduleRoute')
             ->get();

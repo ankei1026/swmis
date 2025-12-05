@@ -9,12 +9,11 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ScheduleStatusUpdated implements ShouldBroadcast
+class GlobalScheduleUpdated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $schedule;
-    public $driverId;
 
     public function __construct(Schedule $schedule)
     {
@@ -23,14 +22,14 @@ class ScheduleStatusUpdated implements ShouldBroadcast
             'scheduleRoute',
             'stationLogs.station'
         ]);
-        $this->driverId = $schedule->driver_id;
     }
 
     public function broadcastOn()
     {
+        // Broadcast to both channels
         return [
-            new Channel('driver.' . $this->driverId),
-            new Channel('monitoring')  // Add monitoring channel
+            new Channel('driver.' . $this->schedule->driver_id),
+            new Channel('monitoring')
         ];
     }
 
@@ -38,11 +37,11 @@ class ScheduleStatusUpdated implements ShouldBroadcast
     {
         return 'schedule.updated';
     }
-
+    
     public function broadcastWith()
     {
-        // Use the getStationRoutesAttribute() method instead of trying to access a relationship
-        $stations = $this->schedule->station_routes;
+        // Same data format you use in ScheduleStatusUpdated
+        $stations = $this->schedule->scheduleRoute->station_routes ?? collect();
 
         return [
             'id' => $this->schedule->id,
@@ -51,14 +50,16 @@ class ScheduleStatusUpdated implements ShouldBroadcast
             'driver_avatar' => $this->schedule->driver->profile_photo_url ?? null,
             'date' => $this->schedule->date,
             'time' => $this->schedule->time,
-            'status' => $this->schedule->status,
             'route_name' => $this->schedule->scheduleRoute->route_name ?? 'Unknown Route',
+            'status' => $this->schedule->status,
             'started_at' => $this->schedule->started_at?->toDateTimeString(),
             'completed_at' => $this->schedule->completed_at?->toDateTimeString(),
+            'progress_percentage' => $this->schedule->progress_percentage ?? 0,
             'stations' => $stations->map(function ($station, $index) {
                 if (!$station) return null;
-
+                
                 $log = $this->schedule->stationLogs->where('station_route_id', $station->id)->first();
+                
                 return [
                     'id' => $station->id,
                     'name' => $station->name,
@@ -71,7 +72,7 @@ class ScheduleStatusUpdated implements ShouldBroadcast
                     'departed_at' => $log?->departed_at?->toDateTimeString(),
                 ];
             })->filter()->values(),
-            'progress_percentage' => $this->schedule->progress_percentage,
+            'last_updated' => $this->schedule->updated_at?->toDateTimeString(),
         ];
     }
 }

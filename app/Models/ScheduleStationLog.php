@@ -37,4 +37,5 @@ class ScheduleStationLog extends Model
     {
         return $this->belongsTo(StationRoute::class, 'station_route_id');
     }
+
 }

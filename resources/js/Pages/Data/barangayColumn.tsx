@@ -39,13 +39,13 @@ const handleDelete = (id: number) => {
 
 // ✅ Barangay DataGrid column definitions
 const barangayColumns: GridColDef[] = [
-    {
-        field: 'id',
-        headerName: 'ID',
-        width: 80,
-        align: 'center',
-        headerAlign: 'center'
-    },
+    // {
+    //     field: 'id',
+    //     headerName: 'ID',
+    //     width: 80,
+    //     align: 'center',
+    //     headerAlign: 'center'
+    // },
     {
         field: 'name',
         headerName: 'Barangay Name',

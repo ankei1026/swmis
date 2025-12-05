@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import Layout from '@/Pages/Layout/LayoutDriver';
 import Title from '@/Pages/Components/Title';
 import Map from '../Components/Map';
-import { router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 
 interface Station {
     id: number;
@@ -21,7 +21,7 @@ interface Schedule {
     id: number;
     date: string;
     time: string;
-    status: 'pending' | 'in_progress' | 'success' | 'failed';
+    status: 'pending' | 'in_progress' | 'completed' | 'failed';
     route_name: string;
     stations: Station[];
     current_station: Station | null;
@@ -34,7 +34,9 @@ interface Props {
 
 // Custom Truck Icon using your SVG
 const TruckIcon: React.FC<{ size?: number }> = ({ size = 240 }) => (
+
     <div style={{ width: size, height: size }}>
+        <Head title="Collection Tracker" />
         <svg
             xmlns="http://www.w3.org/2000/svg"
             width={size}
@@ -99,7 +101,6 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
             case 'completed': return `${baseStyle} bg-green-100 text-green-800 border border-green-300`;
             case 'departed': return `${baseStyle} bg-yellow-100 text-yellow-800 border border-yellow-300`;
             case 'failed': return `${baseStyle} bg-red-100 text-red-800 border border-red-300`;
-            case 'success': return `${baseStyle} bg-green-100 text-green-800 border border-green-300`;
             case 'in_progress': return `${baseStyle} bg-yellow-100 text-yellow-800 border border-yellow-300`;
             default: return `${baseStyle} bg-gray-100 text-gray-800 border border-gray-300`;
         }
@@ -113,7 +114,6 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
             case 'completed': return '✅';
             case 'departed': return '🚗';
             case 'failed': return '❌';
-            case 'success': return '🎯';
             case 'in_progress': return '🚛';
             default: return '⏳';
         }
@@ -131,25 +131,51 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
     const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
     const [currentAction, setCurrentAction] = useState<string>('');
 
-    // Listen for real-time schedule completion
+    // Listen for real-time schedule completion and updates
     useEffect(() => {
         const echo = (window as any).Echo;
         if (!echo || !selectedSchedule) return;
 
-        const channel = echo.channel(`driver.${selectedSchedule.id}`);
+        // Listen to both driver-specific and global monitoring channels
+        const driverChannel = echo.channel(`driver.${selectedSchedule.id}`);
+        const monitoringChannel = echo.channel('monitoring');
+
         const handleScheduleUpdate = (payload: any) => {
-            if (payload && payload.id === selectedSchedule.id && (payload.status === 'success' || payload.status === 'completed')) {
-                toast.success('Route completed!');
-                setRouteCompleted(true);
-                setSelectedSchedule(null);
+            console.log('Driver schedule update received:', payload);
+            
+            if (payload && payload.id === selectedSchedule.id) {
+                // Update the selected schedule with latest data
+                if (payload.stations) {
+                    setSelectedSchedule(prev => prev ? { ...prev, ...payload } : null);
+                }
+                
+                // Show toast if schedule is completed
+                if (payload.status === 'completed') {
+                    toast.success('Route completed!');
+                    setRouteCompleted(true);
+                    setSelectedSchedule(null);
+                }
             }
         };
-        channel.listen('schedule.updated', handleScheduleUpdate);
-        channel.listen('.schedule.updated', handleScheduleUpdate);
+
+        const handleMonitoringUpdate = (payload: any) => {
+            console.log('Monitoring channel update received:', payload);
+            
+            if (payload && payload.id === selectedSchedule.id && payload.stations) {
+                // Update from global monitoring channel
+                setSelectedSchedule(prev => prev ? { ...prev, ...payload } : null);
+            }
+        };
+
+        // Bind listeners
+        driverChannel.listen('schedule.updated', handleScheduleUpdate);
+        monitoringChannel.listen('schedule.updated', handleMonitoringUpdate);
+
         return () => {
-            channel.stopListening('schedule.updated', handleScheduleUpdate);
-            channel.stopListening('.schedule.updated', handleScheduleUpdate);
-            channel.unsubscribe();
+            driverChannel.stopListening('schedule.updated', handleScheduleUpdate);
+            monitoringChannel.stopListening('schedule.updated', handleMonitoringUpdate);
+            driverChannel.unsubscribe();
+            monitoringChannel.unsubscribe();
         };
     }, [selectedSchedule]);
 
@@ -158,7 +184,7 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
         if (schedules.length > 0) {
             // Try to get the last selected schedule from localStorage
             const savedScheduleId = localStorage.getItem('selectedScheduleId');
-            
+
             if (savedScheduleId) {
                 const savedSchedule = schedules.find(s => s.id === parseInt(savedScheduleId));
                 if (savedSchedule) {
@@ -166,7 +192,7 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                     return;
                 }
             }
-            
+
             // If no saved schedule or saved schedule not found, use the first one
             setSelectedSchedule(schedules[0]);
         }
@@ -184,15 +210,15 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
         if (!selectedSchedule || !selectedSchedule.stations) return null;
 
         const stations = selectedSchedule.stations.sort((a, b) => a.order - b.order);
-        
+
         // First, look for stations that are actively being worked on
         const collectingStation = stations.find(station => station.status === 'collecting');
         const arrivedStation = stations.find(station => station.status === 'arrived');
-        
+
         // If we're actively collecting or arrived at a station, that's the current one
         if (collectingStation) return collectingStation;
         if (arrivedStation) return arrivedStation;
-        
+
         // If no active station, find the first pending station
         const pendingStations = stations.filter(station => station.status === 'pending');
         if (pendingStations.length > 0) return pendingStations[0];
@@ -316,7 +342,7 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                         const maxOrder = stations.length ? Math.max(...stations.map(s => s.order)) : -1;
                         const isLast = station ? station.order === maxOrder : false;
                         if (isLast) {
-                            toast.success('Final station collection completed. Tap Complete Route to finish.');
+                            toast.success('Final station collection completed.');
                         } else {
                             toast.success('Station collection completed.');
                         }
@@ -354,7 +380,7 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
 
     const getNextAction = (station: Station) => {
         const currentActiveStation = getCurrentActiveStation;
-        
+
         // Only show actions for the current active station
         if (!currentActiveStation || currentActiveStation.id !== station.id) {
             return null;
@@ -374,34 +400,34 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
         // Normal flow - must go through each status sequentially
         switch (station.status) {
             case 'pending':
-                return { 
-                    label: 'Mark Arrived', 
-                    action: 'arrived', 
-                    icon: '📍', 
-                    color: 'blue' 
+                return {
+                    label: 'Mark Arrived',
+                    action: 'arrived',
+                    icon: '📍',
+                    color: 'blue'
                 };
             case 'arrived':
-                return { 
-                    label: 'Start Collecting', 
-                    action: 'collecting', 
-                    icon: '🔄', 
-                    color: 'purple' 
+                return {
+                    label: 'Start Collecting',
+                    action: 'collecting',
+                    icon: '🔄',
+                    color: 'purple'
                 };
             case 'collecting':
-                return { 
-                    label: 'Complete Collection', 
-                    action: 'completed', 
-                    icon: '✅', 
-                    color: 'green' 
+                return {
+                    label: 'Complete Collection',
+                    action: 'completed',
+                    icon: '✅',
+                    color: 'green'
                 };
             case 'completed':
                 // Only show "Depart" if this isn't the last station
                 if (!isLastStation) {
-                    return { 
-                        label: 'Depart to Next', 
-                        action: 'departed', 
-                        icon: '🚗', 
-                        color: 'yellow' 
+                    return {
+                        label: 'Depart to Next',
+                        action: 'departed',
+                        icon: '🚗',
+                        color: 'yellow'
                     };
                 }
                 return null;
@@ -740,14 +766,14 @@ const CollectionTracker: React.FC<Props> = ({ schedules }) => {
                                                                         }}
                                                                         disabled={currentAction.includes(`updating-${station.id}`)}
                                                                         className={`flex items-center gap-1.5 ${nextAction.isFinalAction
-                                                                                ? 'bg-green-600 hover:bg-green-700'
-                                                                                : nextAction.color === 'blue'
-                                                                                    ? 'bg-blue-500 hover:bg-blue-600'
-                                                                                    : nextAction.color === 'purple'
-                                                                                        ? 'bg-purple-500 hover:bg-purple-600'
-                                                                                        : nextAction.color === 'green'
-                                                                                            ? 'bg-green-500 hover:bg-green-600'
-                                                                                            : 'bg-yellow-500 hover:bg-yellow-600'
+                                                                            ? 'bg-green-600 hover:bg-green-700'
+                                                                            : nextAction.color === 'blue'
+                                                                                ? 'bg-blue-500 hover:bg-blue-600'
+                                                                                : nextAction.color === 'purple'
+                                                                                    ? 'bg-purple-500 hover:bg-purple-600'
+                                                                                    : nextAction.color === 'green'
+                                                                                        ? 'bg-green-500 hover:bg-green-600'
+                                                                                        : 'bg-yellow-500 hover:bg-yellow-600'
                                                                             } text-white px-3 py-2 rounded-lg text-xs font-semibold disabled:opacity-50 transition-all duration-200 whitespace-nowrap shadow-sm hover:shadow-md flex-shrink-0`}
                                                                     >
                                                                         {currentAction === `updating-${station.id}` ? (
