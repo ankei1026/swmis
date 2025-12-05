@@ -11,7 +11,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        Schedule::observe(ScheduleObserver::class);
+        // Schedule::observe(ScheduleObserver::class);
     }
 
     public function register()

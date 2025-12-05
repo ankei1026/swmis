@@ -2,59 +2,84 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 
 class SMSController extends Controller
 {
     protected $apiKey;
-    protected $baseUrl;
+    protected $smsBaseUrl;
 
     public function __construct()
     {
-        $this->apiKey = config('services.semaphore.api_key');
-        $this->baseUrl = 'https://api.semaphore.co/api/v4/messages';
+        $this->apiKey = config('services.philsms.api_key');
+        $this->smsBaseUrl = 'https://dashboard.philsms.com/api/v3/sms/send';
     }
 
-    public function sendSms($number, $message)
+    /**
+     * Send SMS to a single or multiple numbers.
+     *
+     * @param string|array $numbers Single number or array of numbers
+     * @param string $message
+     */
+    public function sendSms($numbers, string $message)
     {
+        if (is_array($numbers)) {
+            $numbers = implode(',', $numbers);
+        }
+
         try {
-            $response = Http::post($this->baseUrl, [
-                'apikey' => $this->apiKey,
-                'number' => $number,
-                'message' => $message,
-            ]);
+            $response = Http::withOptions(['verify' => false])
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                ])
+                ->post($this->smsBaseUrl, [
+                    'recipient' => $numbers,
+                    'sender_id' => 'PhilSMS',
+                    'type' => 'plain',
+                    'message' => $message,
+                ]);
 
             if ($response->successful()) {
-                Log::info('SMS sent successfully', [
-                    'number' => $number,
-                    'response' => $response->json()
-                ]);
-                return true;
+                Log::info("✅ SMS sent to {$numbers}: " . $response->body());
             } else {
-                Log::error('SMS sending failed', [
-                    'number' => $number,
-                    'response' => $response->body()
-                ]);
-                return false;
+                Log::warning("⚠️ SMS failed for {$numbers}: " . $response->body());
             }
+
+            return $response->successful();
         } catch (\Exception $e) {
-            Log::error('SMS service error: ' . $e->getMessage());
+            Log::error("❌ SMS sending error to {$numbers}: " . $e->getMessage());
             return false;
         }
     }
 
-    public function sendBulkSms($numbers, $message)
+    /**
+     * Send SMS to all users with phone numbers.
+     */
+    public function sendToAllUsers(string $message)
     {
-        $successCount = 0;
+        $users = User::whereNotNull('phone_number')->pluck('phone_number')->toArray();
+        return $this->sendSms($users, $message);
+    }
 
-        foreach ($numbers as $number) {
-            if ($this->sendSms($number, $message)) {
-                $successCount++;
-            }
-        }
+    /**
+     * API endpoint to send message via request
+     */
+    public function send(Request $request)
+    {
+        $request->validate([
+            'message' => 'required|string',
+        ]);
 
-        return $successCount;
+        $message = $request->message;
+        $success = $this->sendToAllUsers($message);
+
+        return response()->json([
+            'message' => $success ? 'SMS successfully sent.' : 'SMS failed to send.',
+        ]);
     }
 }

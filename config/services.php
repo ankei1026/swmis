@@ -38,4 +38,12 @@ return [
     'semaphore' => [
         'api_key' => env('SEMAPHORE_SMS_API_KEY'),
     ],
+    'infobip' => [
+        'api_key' => env('INFOBIP_API_KEY'),
+        'base_url' => env('INFOBIP_BASE_URL', 'https://api.infobip.com'),
+        'sender_id' => env('INFOBIP_SENDER_ID', 'ServiceSMS'),
+    ],
+    'philsms' => [
+        'api_key' => env('PHILSMS_API_KEY'),
+    ],
 ];

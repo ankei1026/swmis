@@ -9,9 +9,18 @@ use App\Notifications\DriverScheduleNotification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SchedulingController extends Controller
 {
+    protected $smsController;
+
+    public function __construct(SMSController $smsController)
+    {
+        $this->smsController = $smsController;
+    }
+
+
     public function createScheduling()
     {
         // Get all schedule routes with their drivers
@@ -86,14 +95,12 @@ class SchedulingController extends Controller
         ]);
 
         try {
-            $schedule = null; // <-- declare it here
+            $schedule = null;
 
             DB::transaction(function () use ($validated, &$schedule) {
-                // Get the schedule route
                 $scheduleRoute = ScheduleRoute::findOrFail($validated['schedule_route_id']);
 
-                // Create the schedule
-                $schedule = Schedule::create([
+                $schedule = Schedule::with(['scheduleRoute', 'driver'])->create([
                     'date' => $validated['date'],
                     'time' => $validated['time'],
                     'schedule_route_id' => $validated['schedule_route_id'],
@@ -103,20 +110,34 @@ class SchedulingController extends Controller
                 ]);
             });
 
-            // Now $schedule is usable here
-            $driverUsers = User::where('role', 'driver')->get();
-            foreach ($driverUsers as $driver) {
-                $driver->notify(new DriverScheduleNotification($schedule));
+            if (!$schedule) {
+                return redirect()->back()
+                    ->with('error', 'Failed to create schedule.');
+            }
+
+            $residents = User::where('role', 'resident')->get();
+
+            $message =
+                "SWMIS COLLECTION SCHEDULE\n" .
+                "Date: {$schedule->date} at {$schedule->time}\n" .
+                "Route Name: {$schedule->scheduleRoute->route_name}\n" .
+                // "Routes: {$schedule->scheduleRoute->stationRoute->station_r}\n" .
+                "Driver: {$schedule->driver->name}\n" .
+                "Type: {$schedule->type}";
+
+            foreach ($residents as $resident) {
+                if ($resident->phone_number) {
+                    $this->smsController->sendSms($resident->phone_number, $message);
+                }
             }
 
             return redirect()->route('admin.scheduling.list')
-                ->with('success', 'Schedule created successfully!');
+                ->with('success', 'Schedule created successfully! SMS sent to all residents.');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Failed to create schedule: ' . $e->getMessage());
         }
     }
-
 
     // Add the missing edit method
     public function edit(Schedule $schedule)
