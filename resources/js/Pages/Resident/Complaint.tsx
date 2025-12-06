@@ -352,8 +352,8 @@ const Complaint = () => {
             <FormInputField>
               <div className="flex justify-between items-center mb-1">
                 <FormLabel htmlFor="description" textLabel="Description" />
-                <span className={`text-sm ${data.description.length > 60 ? 'text-red-500' : 'text-gray-500'}`}>
-                  {data.description.length}/60
+                <span className={`text-sm ${data.description.length > 500 ? 'text-red-500' : 'text-gray-500'}`}>
+                  {data.description.length}/500
                 </span>
               </div>
               <TextField
@@ -363,16 +363,16 @@ const Complaint = () => {
                 placeholder="Describe your complaint here..."
                 value={data.description}
                 onChange={(e) => {
-                  if (e.target.value.length <= 60) {
+                  if (e.target.value.length <= 500) {
                     setData('description', e.target.value);
                   }
                 }}
                 fullWidth
                 size="small"
-                error={!!errors.description || data.description.length > 60}
-                helperText={errors.description || (data.description.length > 60 ? 'Maximum 60 characters allowed' : '')}
+                error={!!errors.description || data.description.length > 500}
+                helperText={errors.description || (data.description.length > 500 ? 'Maximum 500 characters allowed' : '')}
                 disabled={processing || !isVerified}
-                inputProps={{ maxLength: 60 }} // HTML attribute backup
+                inputProps={{ maxLength: 500 }} // HTML attribute backup
               />
             </FormInputField>
             <FormInputField className="w-full">
