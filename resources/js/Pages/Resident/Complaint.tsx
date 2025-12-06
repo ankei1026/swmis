@@ -289,12 +289,6 @@ const Complaint = () => {
                 <MenuItem value="">
                   <em>Select Type</em>
                 </MenuItem>
-                {/* Existing categories */}
-                <MenuItem value="garbage">Garbage</MenuItem>
-                <MenuItem value="road">Road</MenuItem>
-                <MenuItem value="sewage">Sewage</MenuItem>
-                <MenuItem value="public_safety">Public Safety</MenuItem>
-
                 {/* Added detailed waste complaint options */}
                 <MenuItem value="uncollected_waste">Uncollected Waste</MenuItem>
                 <MenuItem value="overflowing_bins">Overflowing Bins</MenuItem>
@@ -312,7 +306,7 @@ const Complaint = () => {
             </FormInputField>
 
             <FormInputField>
-              <FormLabel htmlFor="barangay" textLabel="Barangay" />
+              <FormLabel htmlFor="barangay" textLabel="Purok" />
               <Select
                 id="barangay"
                 value={data.barangay}
@@ -322,9 +316,29 @@ const Complaint = () => {
                 size="small"
                 required
                 disabled={processing || !isVerified}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: '250px',
+                      '&::-webkit-scrollbar': {
+                        width: '8px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: '#f1f1f1',
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: '#888',
+                        borderRadius: '4px',
+                      },
+                      '&::-webkit-scrollbar-thumb:hover': {
+                        background: '#555',
+                      },
+                    },
+                  },
+                }}
               >
                 <MenuItem value="">
-                  <em>Select Barangay</em>
+                  <em>Select Purok</em>
                 </MenuItem>
                 {barangays.map((b) => (
                   <MenuItem key={b.id} value={b.name}>
@@ -418,36 +432,38 @@ const Complaint = () => {
       </div>
 
       {/* Complaint History Table */}
-      {complaints.length > 0 && (
-        <div className='w-full bg-gray-100 py-6 rounded-lg mt-4'>
-          <div className="">
-            <div className="flex h-full items-center justify-center">
-              <DataTable
-                columns={columns}
-                rows={rows}
-                title="My Complaint Submissions"
-                pageSize={5}
-                checkboxSelection={false}
-              />
-            </div>
+      {
+        complaints.length > 0 && (
+          <div className='w-full bg-gray-100 py-6 rounded-lg mt-4'>
+            <div className="">
+              <div className="flex h-full items-center justify-center">
+                <DataTable
+                  columns={columns}
+                  rows={rows}
+                  title="My Complaint Submissions"
+                  pageSize={5}
+                  checkboxSelection={false}
+                />
+              </div>
 
-            {/* Image Preview Dialog */}
-            <Dialog open={!!selectedImage} onClose={() => setSelectedImage(null)} maxWidth="md">
-              <DialogTitle>Complaint Photo</DialogTitle>
-              <DialogContent>
-                {selectedImage && (
-                  <img
-                    src={selectedImage}
-                    alt="Complaint Photo"
-                    className="max-h-[80vh] max-w-full rounded-md"
-                  />
-                )}
-              </DialogContent>
-            </Dialog>
+              {/* Image Preview Dialog */}
+              <Dialog open={!!selectedImage} onClose={() => setSelectedImage(null)} maxWidth="md">
+                <DialogTitle>Complaint Photo</DialogTitle>
+                <DialogContent>
+                  {selectedImage && (
+                    <img
+                      src={selectedImage}
+                      alt="Complaint Photo"
+                      className="max-h-[80vh] max-w-full rounded-md"
+                    />
+                  )}
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
-        </div>
-      )}
-    </LayoutResident>
+        )
+      }
+    </LayoutResident >
   );
 };
 

@@ -40,13 +40,13 @@ const handleDelete = (id: number) => {
 
 // ✅ Schedule Route DataGrid column definitions
 const scheduleRouteColumns: GridColDef[] = [
-    {
-        field: 'id',
-        headerName: 'ID',
-        width: 80,
-        align: 'center',
-        headerAlign: 'center'
-    },
+    // {
+    //     field: 'id',
+    //     headerName: 'ID',
+    //     width: 80,
+    //     align: 'center',
+    //     headerAlign: 'center'
+    // },
     {
         field: 'route_name',
         headerName: 'Route Name',

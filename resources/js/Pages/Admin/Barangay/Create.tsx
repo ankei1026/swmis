@@ -43,7 +43,7 @@ const BarangayCreate = ({ districts }: BarangayCreateProps) => {
     return (
         <Layout>
             <Head title="Create Purok" />
-            <Title title="Create Purok" subtitle="Add a new barangay to the system" />
+            <Title title="Create Purok" subtitle="Add a new purok to the system" />
             <div className='w-full bg-gray-100 p-6 rounded-lg mt-6'>
                 <div className='bg-white p-6 rounded-lg shadow-md space-y-6'>
                     <form onSubmit={handleSubmit}>
