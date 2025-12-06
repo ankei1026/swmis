@@ -38,13 +38,13 @@ const handleDelete = (id: number) => {
 
 // ✅ Station Route DataGrid column definitions
 const stationRouteColumns: GridColDef[] = [
-    { 
-        field: 'id', 
-        headerName: 'ID', 
-        width: 80,
-        align: 'center',
-        headerAlign: 'center'
-    },
+    // { 
+    //     field: 'id', 
+    //     headerName: 'ID', 
+    //     width: 80,
+    //     align: 'center',
+    //     headerAlign: 'center'
+    // },
     { 
         field: 'name', 
         headerName: 'Station Name', 

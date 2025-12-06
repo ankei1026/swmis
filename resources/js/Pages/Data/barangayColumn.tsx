@@ -48,7 +48,7 @@ const barangayColumns: GridColDef[] = [
     // },
     {
         field: 'name',
-        headerName: 'Barangay Name',
+        headerName: 'Purok Name',
         width: 250,
         flex: 1,
     },
