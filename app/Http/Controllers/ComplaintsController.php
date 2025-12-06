@@ -43,6 +43,7 @@ class ComplaintsController extends Controller
                 'barangay' => $complaint->barangay,
                 'description' => $complaint->description,
                 'status' => $complaint->status,
+                'photo' => $complaint->photo
             ]
         ]);
     }

@@ -25,7 +25,7 @@ export const mainMenu = [
         ],
     },
     {
-        text: 'Barangay',
+        text: 'Purok',
         icon: <LocationEditIcon />,
         children: [
             { text: 'List', href: '/admin/barangays/list', icon: <ListIcon /> },

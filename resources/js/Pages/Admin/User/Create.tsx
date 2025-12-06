@@ -127,7 +127,7 @@ const UserCreate = () => {
 
                         {/* Barangay - Updated to Dropdown */}
                         <FormInputField>
-                            <FormLabel htmlFor="barangay" textLabel="Barangay" />
+                            <FormLabel htmlFor="barangay" textLabel="Purok" />
                             <Select
                                 id="barangay"
                                 value={data.barangay}
@@ -138,7 +138,7 @@ const UserCreate = () => {
                                 required
                             >
                                 <MenuItem value="">
-                                    <em>Select Barangay</em>
+                                    <em>Select Purok</em>
                                 </MenuItem>
                                 {barangays.map((barangay) => (
                                     <MenuItem key={barangay.id} value={barangay.name}>

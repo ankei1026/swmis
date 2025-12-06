@@ -136,14 +136,28 @@ const Complaint = () => {
     {
       field: 'type',
       headerName: 'Complaint Type',
-      width: 150,
+      width: 180,
       renderCell: (params: any) => {
-        const typeLabels: { [key: string]: string } = {
-          'garbage': 'Garbage',
-          'road': 'Road',
-          'sewage': 'Sewage',
-          'public_safety': 'Public Safety'
+        const typeLabels: Record<string, string> = {
+          garbage: 'Garbage',
+          road: 'Road',
+          sewage: 'Sewage',
+          public_safety: 'Public Safety',
+
+          // Extended Waste Categories
+          uncollected_waste: 'Uncollected Waste',
+          overflowing_bins: 'Overflowing Bins',
+          improper_segregation: 'Improper Waste Segregation',
+          foul_odor: 'Foul Odor Issues',
+          burning_waste: 'Burning of Waste',
+          illegal_dumping: 'Illegal Dumping',
+          irregular_schedule: 'Irregular Collection Schedule',
+          missed_collection: 'Missed Garbage Collection',
+          insufficient_bins: 'Insufficient Waste Bins',
+          clogged_drainage: 'Clogged Drainage',
+          construction_waste: 'Construction Waste Issues'
         };
+
         return typeLabels[params.value] || params.value;
       }
     },
@@ -257,8 +271,14 @@ const Complaint = () => {
             <FormInputField>
               <FormLabel htmlFor="type" textLabel="Complaint Type" />
               <Select
-                id="type"
-                value={data.type}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 300
+                    }
+                  }
+                }}
+                value={data.type || ""}
                 onChange={(e) => setData('type', e.target.value)}
                 displayEmpty
                 fullWidth
@@ -269,10 +289,24 @@ const Complaint = () => {
                 <MenuItem value="">
                   <em>Select Type</em>
                 </MenuItem>
+                {/* Existing categories */}
                 <MenuItem value="garbage">Garbage</MenuItem>
                 <MenuItem value="road">Road</MenuItem>
                 <MenuItem value="sewage">Sewage</MenuItem>
                 <MenuItem value="public_safety">Public Safety</MenuItem>
+
+                {/* Added detailed waste complaint options */}
+                <MenuItem value="uncollected_waste">Uncollected Waste</MenuItem>
+                <MenuItem value="overflowing_bins">Overflowing Bins</MenuItem>
+                <MenuItem value="improper_segregation">Improper Waste Segregation</MenuItem>
+                <MenuItem value="foul_odor">Foul Odor Issues</MenuItem>
+                <MenuItem value="burning_waste">Burning of Waste</MenuItem>
+                <MenuItem value="illegal_dumping">Illegal Dumping</MenuItem>
+                <MenuItem value="irregular_schedule">Irregular Collection Schedule</MenuItem>
+                <MenuItem value="missed_collection">Missed Garbage Collection</MenuItem>
+                <MenuItem value="insufficient_bins">Insufficient Waste Bins</MenuItem>
+                <MenuItem value="clogged_drainage">Clogged Drainage</MenuItem>
+                <MenuItem value="construction_waste">Construction Waste Issues</MenuItem>
               </Select>
               {errors.type && <p className="mt-1 text-sm text-red-500">{errors.type}</p>}
             </FormInputField>

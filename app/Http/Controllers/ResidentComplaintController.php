@@ -28,7 +28,7 @@ class ResidentComplaintController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'type' => 'required|in:garbage,road,sewage,public_safety',
+            'type' => 'required|string',
             'barangay' => 'required|string',
             'description' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',

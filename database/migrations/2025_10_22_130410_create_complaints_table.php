@@ -16,13 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('resident_id');
             $table->foreign('resident_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('photo')->nullable();
-            $table->enum('type', [
-                'garbage',
-                'road',
-                'sewage',
-                'public_safety',
-            ]);
-
+            $table->string('type');
             $table->string('barangay');
             $table->string('description')->nullable();
             $table->enum('status', ['pending', 'resolve'])->default('pending');

@@ -3,6 +3,8 @@ import Title from '@/Pages/Components/Title'
 import { Head, useForm } from '@inertiajs/react'
 import { Button, MenuItem, Select, TextField } from '@mui/material'
 import { toast } from 'sonner'
+import { useState } from 'react'
+import { Dialog, DialogTitle, DialogContent } from '@mui/material'
 
 interface EditProps {
   complaint: {
@@ -11,10 +13,12 @@ interface EditProps {
     description: string
     type: string
     status: string
+    photo: string
   }
 }
 
 export default function Edit({ complaint }: EditProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data, setData, put, processing, errors } = useForm({
     status: complaint.status
@@ -77,14 +81,49 @@ export default function Edit({ complaint }: EditProps) {
               {errors.status && <p className="mt-1 text-sm text-red-500">{errors.status}</p>}
             </div>
 
+            {/* Document Preview */}
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Complaint Attachment</label>
+
+              {complaint.photo ? (
+                <div className="flex justify-center">
+                  <img
+                    src={`/storage/${complaint.photo}`}
+                    alt="Complaint Attachment"
+                    className="h-32 w-32 object-cover rounded-md cursor-pointer transition hover:opacity-80"
+                    onClick={() => setSelectedImage(`/storage/${complaint.photo}`)}
+                  />
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 text-center">No photo attached</p>
+              )}
+            </div>
+
             {/* Submit */}
             <div className="mt-5 flex justify-end">
               <Button type="submit" variant="contained" color="success" disabled={processing}>
                 {processing ? 'Saving...' : 'Save'}
               </Button>
             </div>
+
           </form>
         </div>
+        <Dialog
+          open={!!selectedImage}
+          onClose={() => setSelectedImage(null)}
+          maxWidth="md"
+        >
+          <DialogTitle>Attachment Preview</DialogTitle>
+          <DialogContent>
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Complaint Attachment"
+                className="max-h-[80vh] max-w-full rounded-md"
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   )
