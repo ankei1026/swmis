@@ -8,18 +8,22 @@ interface GarbageInfoProps {
     totalFailed: number | string;
     totalOngoing: number | string;
     totalPending: number | string;
+    totalInProgress: number | string;
 }
 
 const GarbageInfo: React.FC<GarbageInfoProps> = ({
     totalCollections,
     totalSuccess,
     totalFailed,
-    totalPending
+    totalPending,
+    totalInProgress,
+
 }) => {
+    console.log("wowo", totalInProgress)
     return (
         <div className="mb-2 mt-4">
-            <Title className="text-lg text-gray-600 font-semibold mb-2" title="Schedule Information"/>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Title className="text-lg text-gray-600 font-semibold mb-2" title="Schedule Information" />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 {/* Total Collections */}
                 <Card className="border border-gray-200 bg-white">
                     <CardContent className="flex items-center gap-3 p-3">
@@ -53,6 +57,17 @@ const GarbageInfo: React.FC<GarbageInfoProps> = ({
                     </CardContent>
                 </Card>
 
+                {/* In Progress */}
+                <Card className="border border-gray-200 bg-white">
+                    <CardContent className="flex items-center gap-3 p-3">
+                        <Truck className="text-orange-500" size={30} />
+                        <div>
+                            <h4 className="text-md text-gray-500">In Progress</h4>
+                            <p className="text-3xl font-semibold text-gray-900">{totalInProgress}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+
                 {/* Pending */}
                 <Card className="border border-gray-200 bg-white">
                     <CardContent className="flex items-center gap-3 p-3">
@@ -66,6 +81,6 @@ const GarbageInfo: React.FC<GarbageInfoProps> = ({
             </div>
         </div>
     );
-};
+}; 6
 
 export default GarbageInfo;

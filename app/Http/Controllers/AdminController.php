@@ -22,6 +22,7 @@ class AdminController extends Controller
 
         $totalCollections = Schedule::count();
         $totalSuccess = Schedule::where('status', 'success')->count();
+        $totalInProgress = Schedule::where('status', 'in_progress')->count();
         // Combined count for statuses 'success' and 'completed'
         $totalNewSuccess = Schedule::whereIn('status', ['success', 'completed'])->count();
         $totalFailed = Schedule::where('status', 'failed')->count();
@@ -65,6 +66,7 @@ class AdminController extends Controller
             'totalFailed' => $totalFailed,
             'totalOngoing' => $totalOngoing,
             'totalPending' => $totalPending,
+            'totalInProgress' => $totalInProgress,
             'weeklyPerformance' => $weeklyData,
 
             'totalUsers' => $totalUsers,

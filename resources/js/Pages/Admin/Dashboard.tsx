@@ -22,6 +22,7 @@ interface DashboardProps {
     adminCount: number;
     driverCount: number;
     residentCount: number;
+    totalInProgress: number;
     weeklyPerformance: {
         label: string;
         success: number;
@@ -53,7 +54,8 @@ const Dashboard = () => {
         routeStations,
         totalBarangay,
         totalStationRoute,
-        totalScheduleCount
+        totalScheduleCount,
+        totalInProgress
     } = usePage<DashboardProps>().props;
 
     return (
@@ -111,6 +113,7 @@ const Dashboard = () => {
                 totalFailed={totalFailed}
                 totalSuccess={totalSuccess}
                 totalPending={totalPending}
+                totalInProgress={totalInProgress}
             />
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-6">
