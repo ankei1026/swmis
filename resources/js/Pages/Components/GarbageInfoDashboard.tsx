@@ -14,7 +14,6 @@ const GarbageInfo: React.FC<GarbageInfoProps> = ({
     totalCollections,
     totalSuccess,
     totalFailed,
-    totalOngoing,
     totalPending
 }) => {
     return (

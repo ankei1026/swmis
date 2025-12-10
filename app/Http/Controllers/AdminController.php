@@ -61,7 +61,7 @@ class AdminController extends Controller
 
         return Inertia::render('Admin/Dashboard', [
             'totalCollections' => $totalCollections,
-            'totalSuccess' => $totalSuccess,
+            'totalSuccess' => $totalNewSuccess,
             'totalFailed' => $totalFailed,
             'totalOngoing' => $totalOngoing,
             'totalPending' => $totalPending,
