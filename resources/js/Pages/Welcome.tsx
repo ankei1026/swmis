@@ -1,18 +1,49 @@
 import { Head, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { BarChart3, Globe, Leaf, LocationEditIcon, Recycle, ShieldCheck, Users } from 'lucide-react';
-import { useState } from 'react';
+import { BarChart3, Globe, Leaf, LocationEditIcon, Recycle, ShieldCheck, Shield, FileText, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import AuthModal from './Auth/AuthModal';
+import FullCalendarComponent from '@/Pages/Components/FullCalendar'
 
 export default function LandingPage() {
     const [showAuth, setShowAuth] = useState(false);
+    const [showPrivacyNotice, setShowPrivacyNotice] = useState(false);
 
-    const { props } = usePage<{ 
-        barangays?: { id: number; name: string }[]; 
+    const { props } = usePage<{
+        barangays?: { id: number; name: string }[];
         successCount?: number
+        schedules?: any[];
     }>();
+
     const barangays = props.barangays ?? [];
-    const successCount = props.successCount ?? []; // Fixed: Added schedules definition
+    const successCount = props.successCount ?? [];
+    const schedules = props.schedules ?? [];
+
+    // Check if user has accepted privacy notice
+    useEffect(() => {
+        const hasAcceptedPrivacy = localStorage.getItem('dataPrivacyAccepted');
+        if (!hasAcceptedPrivacy) {
+            // Show after a short delay on first visit
+            const timer = setTimeout(() => {
+                setShowPrivacyNotice(true);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
+    const handleAcceptPrivacy = () => {
+        localStorage.setItem('dataPrivacyAccepted', 'true');
+        setShowPrivacyNotice(false);
+    };
+
+    const handleAccessSystem = () => {
+        const hasAcceptedPrivacy = localStorage.getItem('dataPrivacyAccepted');
+        if (!hasAcceptedPrivacy) {
+            setShowPrivacyNotice(true);
+        } else {
+            setShowAuth(true);
+        }
+    };
 
     return (
         <div>
@@ -40,16 +71,15 @@ export default function LandingPage() {
                                 Learn More
                             </a>
 
-                            {/* ✅ Button that opens Auth Modal */}
+                            {/* ✅ Button that opens Auth Modal after privacy check */}
                             <button
-                                onClick={() => setShowAuth(true)}
+                                onClick={handleAccessSystem}
                                 className="rounded-full border border-white px-6 py-3 font-semibold text-white hover:bg-green-700/30"
                             >
                                 Access System
                             </button>
                         </div>
                     </motion.div>
-
                     <motion.img
                         initial={{ opacity: 0, y: 60 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -149,6 +179,15 @@ export default function LandingPage() {
                     </div>
                 </section>
 
+                {/* FullCalendar Section */}
+                <section className="w-full h-40vh px-8 md:px-16 lg:px-46 py-20 bg-gray-50">
+                    <h2 className="text-3xl font-bold text-gray-800 md:text-4xl text-center mb-6">
+                        Waste Collection Schedule Calendar
+                    </h2>
+                    {/* Pass schedules to FullCalendarComponent */}
+                    <FullCalendarComponent schedules={schedules} />
+                </section>
+
                 {/* Developers Section */}
                 <section className="w-full bg-gradient-to-br from-green-700 via-green-600 to-emerald-500 py-20 text-center text-white">
                     <motion.div
@@ -203,8 +242,141 @@ export default function LandingPage() {
                 </footer>
             </div>
 
-            {/* ✅ Auth Modal (Rendered outside main layout) */}
+            {/* ✅ Auth Modal */}
             <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} barangays={props.barangays} />
+            
+            {/* ✅ Data Privacy Act Modal */}
+            {showPrivacyNotice && (
+                <div className="fixed inset-0 overflow-y-auto">
+                    {/* Backdrop */}
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+                    
+                    {/* Modal */}
+                    <div className="flex min-h-full items-center justify-center p-4">
+                        <div className="relative w-full max-w-4xl transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all">
+                            {/* Modal Header */}
+                            <div className="bg-blue-600 px-6 py-4 text-white">
+                                <div className="flex items-center">
+                                    <Shield className="mr-3 h-6 w-6" />
+                                    <h3 className="text-xl font-bold">
+                                        Data Privacy Act Notice
+                                    </h3>
+                                </div>
+                                <p className="mt-1 text-blue-100 text-sm">
+                                    Republic Act No. 10173 - Data Privacy Act of 2012
+                                </p>
+                            </div>
+                            
+                            {/* Modal Body with Scroll */}
+                            <div className="max-h-[60vh] overflow-y-auto px-6 py-6">
+                                <div className="space-y-4">
+                                    <div className="flex items-start">
+                                        <FileText className="mr-3 mt-1 h-5 w-5 text-blue-600 flex-shrink-0" />
+                                        <div>
+                                            <h4 className="font-semibold text-gray-800 mb-2">Privacy Notice</h4>
+                                            <p className="text-gray-600 text-sm">
+                                                Welcome to the Solid Waste Management Information System. We are committed to protecting your personal information in accordance with the Data Privacy Act of 2012 (Republic Act No. 10173).
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-blue-50 p-4 rounded-lg">
+                                        <h4 className="font-semibold text-blue-800 mb-3">Information We Collect:</h4>
+                                        <ul className="text-gray-700 text-sm space-y-2">
+                                            <li className="flex items-start">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 mr-2"></div>
+                                                <span>Personal identification information (name, email, contact details)</span>
+                                            </li>
+                                            <li className="flex items-start">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 mr-2"></div>
+                                                <span>Barangay/Purok information for service allocation</span>
+                                            </li>
+                                            <li className="flex items-start">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 mr-2"></div>
+                                                <span>System usage data for improvement purposes</span>
+                                            </li>
+                                            <li className="flex items-start">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 mr-2"></div>
+                                                <span>Collection schedule and operational data</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-semibold text-gray-800 mb-2">Purpose of Data Collection:</h4>
+                                        <p className="text-gray-600 text-sm">
+                                            Your data is collected solely for the purpose of providing efficient waste management services, scheduling collections, improving system functionality, and generating reports for local government units.
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-semibold text-gray-800 mb-2">Your Rights:</h4>
+                                        <p className="text-gray-600 text-sm mb-3">
+                                            Under the Data Privacy Act, you have the right to:
+                                        </p>
+                                        <ul className="text-gray-700 text-sm space-y-1 ml-4">
+                                            <li className="list-disc">Access your personal information</li>
+                                            <li className="list-disc">Correct inaccurate or incomplete data</li>
+                                            <li className="list-disc">Request deletion of your data (subject to legal requirements)</li>
+                                            <li className="list-disc">Object to the processing of your personal data</li>
+                                            <li className="list-disc">Lodge a complaint with the National Privacy Commission</li>
+                                        </ul>
+                                    </div>
+
+                                    <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                                        <h4 className="font-semibold text-yellow-800 mb-2">Important Notice:</h4>
+                                        <p className="text-yellow-700 text-sm">
+                                            By clicking "I Accept", you acknowledge that you have read, understood, and agree to the terms of this Privacy Notice. You consent to the collection, processing, and storage of your personal information for the purposes stated above.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center text-gray-600 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            id="privacyCheckbox"
+                                            className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                                        />
+                                        <label htmlFor="privacyCheckbox">
+                                            I have read and understood the Data Privacy Act Notice
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Modal Footer */}
+                            <div className="bg-gray-50 px-6 py-4 flex justify-between items-center">
+                                <button
+                                    onClick={() => {
+                                        // Option: Redirect away or keep on page
+                                        window.location.href = 'https://www.privacy.gov.ph';
+                                    }}
+                                    className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                                >
+                                    Learn More About Data Privacy
+                                </button>
+                                <div className="flex space-x-3">
+                                    <button
+                                        onClick={() => {
+                                            // User can choose to leave if they don't accept
+                                            alert('You must accept the Data Privacy Notice to use this system.');
+                                        }}
+                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                        Decline
+                                    </button>
+                                    <button
+                                        onClick={handleAcceptPrivacy}
+                                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                                    >
+                                        <Check className="mr-2 h-4 w-4" />
+                                        I Accept
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
