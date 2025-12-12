@@ -1,7 +1,7 @@
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { EventClickArg, DateClickArg, EventContentArg } from '@fullcalendar/core';
+import { EventClickArg, EventContentArg } from '@fullcalendar/core';
 import { useState } from 'react';
 
 interface Schedule {
@@ -273,11 +273,6 @@ const FullCalendarComponent = ({ schedules = [] }: FullCalendarComponentProps) =
         setIsModalOpen(true);
     };
 
-    const handleDateClick = (info: DateClickArg) => {
-        const formattedDate = formatDate(info.dateStr);
-        alert(`Clicked date: ${formattedDate}\n\nYou can add new collection schedules here.`);
-    };
-
     const handleModalClose = () => {
         setIsModalOpen(false);
         setSelectedEvent(null);
@@ -331,7 +326,6 @@ const FullCalendarComponent = ({ schedules = [] }: FullCalendarComponentProps) =
                 initialView="dayGridMonth"
                 events={formatEvents()}
                 eventClick={handleEventClick}
-                dateClick={handleDateClick}
                 headerToolbar={{
                     left: 'prev,next today',
                     center: 'title',

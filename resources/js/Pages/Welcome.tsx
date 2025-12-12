@@ -255,14 +255,14 @@ export default function LandingPage() {
                     <div className="flex min-h-full items-center justify-center p-4">
                         <div className="relative w-full max-w-4xl transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all">
                             {/* Modal Header */}
-                            <div className="bg-blue-600 px-6 py-4 text-white">
+                            <div className="bg-green-600 px-6 py-4 text-white">
                                 <div className="flex items-center">
                                     <Shield className="mr-3 h-6 w-6" />
                                     <h3 className="text-xl font-bold">
                                         Data Privacy Act Notice
                                     </h3>
                                 </div>
-                                <p className="mt-1 text-blue-100 text-sm">
+                                <p className="mt-1 text-green-100 text-sm">
                                     Republic Act No. 10173 - Data Privacy Act of 2012
                                 </p>
                             </div>
@@ -271,7 +271,7 @@ export default function LandingPage() {
                             <div className="max-h-[60vh] overflow-y-auto px-6 py-6">
                                 <div className="space-y-4">
                                     <div className="flex items-start">
-                                        <FileText className="mr-3 mt-1 h-5 w-5 text-blue-600 flex-shrink-0" />
+                                        <FileText className="mr-3 mt-1 h-5 w-5 text-green-600 flex-shrink-0" />
                                         <div>
                                             <h4 className="font-semibold text-gray-800 mb-2">Privacy Notice</h4>
                                             <p className="text-gray-600 text-sm">
@@ -280,24 +280,24 @@ export default function LandingPage() {
                                         </div>
                                     </div>
 
-                                    <div className="bg-blue-50 p-4 rounded-lg">
-                                        <h4 className="font-semibold text-blue-800 mb-3">Information We Collect:</h4>
+                                    <div className="bg-green-50 p-4 rounded-lg">
+                                        <h4 className="font-semibold text-green-800 mb-3">Information We Collect:</h4>
                                         <ul className="text-gray-700 text-sm space-y-2">
                                             <li className="flex items-start">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 mr-2"></div>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-600 mt-1.5 mr-2"></div>
                                                 <span>Personal identification information (name, email, contact details)</span>
                                             </li>
                                             <li className="flex items-start">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 mr-2"></div>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-600 mt-1.5 mr-2"></div>
                                                 <span>Barangay/Purok information for service allocation</span>
                                             </li>
                                             <li className="flex items-start">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 mr-2"></div>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-600 mt-1.5 mr-2"></div>
                                                 <span>System usage data for improvement purposes</span>
                                             </li>
                                             <li className="flex items-start">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 mr-2"></div>
-                                                <span>Collection schedule and operational data</span>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-600 mt-1.5 mr-2"></div>
+                                                <span>Collection schedules, complaints, and operational data</span>
                                             </li>
                                         </ul>
                                     </div>
@@ -305,7 +305,7 @@ export default function LandingPage() {
                                     <div>
                                         <h4 className="font-semibold text-gray-800 mb-2">Purpose of Data Collection:</h4>
                                         <p className="text-gray-600 text-sm">
-                                            Your data is collected solely for the purpose of providing efficient waste management services, scheduling collections, improving system functionality, and generating reports for local government units.
+                                            Your data is collected solely for the purpose of providing efficient waste management services, scheduling collections, and improving system functionality..
                                         </p>
                                     </div>
 
@@ -334,7 +334,7 @@ export default function LandingPage() {
                                         <input
                                             type="checkbox"
                                             id="privacyCheckbox"
-                                            className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                                            className="mr-2 h-4 w-4 text-green-600 rounded focus:ring-green-500"
                                         />
                                         <label htmlFor="privacyCheckbox">
                                             I have read and understood the Data Privacy Act Notice
@@ -350,7 +350,7 @@ export default function LandingPage() {
                                         // Option: Redirect away or keep on page
                                         window.location.href = 'https://www.privacy.gov.ph';
                                     }}
-                                    className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                                    className="px-4 py-2 text-sm font-medium text-green-600 hover:text-green-800 transition-colors"
                                 >
                                     Learn More About Data Privacy
                                 </button>
@@ -366,7 +366,7 @@ export default function LandingPage() {
                                     </button>
                                     <button
                                         onClick={handleAcceptPrivacy}
-                                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors flex items-center"
                                     >
                                         <Check className="mr-2 h-4 w-4" />
                                         I Accept

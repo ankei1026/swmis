@@ -24,6 +24,7 @@ interface DashboardProps {
     totalBarangay: number;
     totalStationRoute: number;
     totalScheduleCount: number;
+    totalInprogress: number
 }
 
 const Dashboard = () => {
@@ -39,7 +40,8 @@ const Dashboard = () => {
         routeStations,
         totalBarangay,
         totalStationRoute,
-        totalScheduleCount
+        totalScheduleCount,
+        totalInprogress
     } = usePage<DashboardProps>().props;
 
     // console.log('Route success counts:', successCountsByRoute);
@@ -59,6 +61,7 @@ const Dashboard = () => {
                     totalFailed={totalFailed}
                     totalOngoing={totalOngoing}
                     totalPending={totalPending}
+                    totalInProgress={totalInprogress}
                 />
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

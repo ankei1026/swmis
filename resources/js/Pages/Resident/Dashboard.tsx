@@ -13,6 +13,7 @@ interface DashboardProps {
     totalFailed: number;
     totalOngoing: number;
     totalPending: number;
+    totalInprogress: number;
     weeklyPerformance: {
         label: string;
         success: number;
@@ -40,6 +41,7 @@ const Dashboard = () => {
         successCountsByRoute,
         mostSuccessfulRoute,
         routeStations,
+        totalInprogress,
         user
     } = usePage<DashboardProps>().props;
 
@@ -95,6 +97,7 @@ const Dashboard = () => {
                     totalFailed={totalFailed}
                     totalOngoing={totalOngoing}
                     totalPending={totalPending}
+                    totalInProgress={totalInprogress}
                 />
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

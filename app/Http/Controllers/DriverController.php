@@ -21,6 +21,7 @@ class DriverController extends Controller
         $totalFailed = Schedule::where('status', 'failed')->count();
         $totalOngoing = Schedule::where('status', 'in_progress')->count();
         $totalPending = Schedule::where('status', 'pending')->count();
+        $totalInprogress = Schedule::where('status', 'in_progress')->count();
 
         // Get additional counts for the dashboard cards
         $totalBarangay = Barangay::count();
@@ -55,7 +56,7 @@ class DriverController extends Controller
 
         return Inertia::render('Driver/Dashboard', [
             'totalCollections' => $totalCollections,
-            'totalSuccess' => $totalSuccess,
+            'totalSuccess' => $totalNewSuccess,
             'totalFailed' => $totalFailed,
             'totalOngoing' => $totalOngoing,
             'totalPending' => $totalPending,
@@ -71,6 +72,7 @@ class DriverController extends Controller
             'totalScheduleCount' => $totalScheduleRoute,
             // New combined success + completed count
             'totalNewSuccess' => $totalNewSuccess,
+            'totalInprogress' => $totalInprogress
         ]);
     }
 

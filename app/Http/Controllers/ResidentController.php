@@ -25,6 +25,7 @@ class ResidentController extends Controller
         $totalFailed = Schedule::where('status', 'failed')->count();
         $totalOngoing = Schedule::where('status', 'in_progress')->count();
         $totalPending = Schedule::where('status', 'pending')->count();
+        $totalInprogress = Schedule::where('status', 'in_progress')->count();
 
         // Get collections within the last 7 days for weekly performance
         $startDate = Carbon::now()->subDays(6)->startOfDay();
@@ -55,10 +56,11 @@ class ResidentController extends Controller
         return Inertia::render('Resident/Dashboard', [
             // Basic collection stats
             'totalCollections' => $totalCollections,
-            'totalSuccess' => $totalSuccess,
+            'totalSuccess' => $totalNewSuccess,
             'totalFailed' => $totalFailed,
             'totalOngoing' => $totalOngoing,
             'totalPending' => $totalPending,
+            'totalInprogress' => $totalInprogress,
             
             // Weekly performance data
             'weeklyPerformance' => $weeklyData,
